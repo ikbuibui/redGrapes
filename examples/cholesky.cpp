@@ -5,24 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <redGrapes/redGrapes.hpp>
+#include <redGrapes/resource/ioresource.hpp>
+
 #include <cblas.h>
-
-#include <iostream>
-// work-around, see
-//   https://github.com/xianyi/OpenBLAS/issues/1992#issuecomment-459474791
-//   https://github.com/xianyi/OpenBLAS/pull/1998
-#include <complex>
-#define lapack_complex_float std::complex<float>
-#define lapack_complex_double std::complex<double>
-// end work-around
-
 #include <lapacke.h>
 
-#define REDGRAPES_TASK_PROPERTIES redGrapes::LabelProperty
-
-#include "redGrapes/resource/ioresource.hpp"
-
-#include <redGrapes/redGrapes.hpp>
+#include <iostream>
 
 template<typename TTask>
 void print_matrix(std::vector<redGrapes::IOResource<double*, TTask>> A, int nblks, int blocksize)
@@ -139,7 +128,7 @@ int main(int argc, char* argv[])
         {
             // A[j,j] = A[j,j] - A[j,i] * (A[j,i])^t
             rg.emplace_task(
-                [blksz, nblks](auto a, auto c)
+                [blksz](auto a, auto c)
                 {
                     spdlog::debug("dsyrk");
                     cblas_dsyrk(
@@ -161,7 +150,7 @@ int main(int argc, char* argv[])
 
         // Cholesky Factorization of A[j,j]
         rg.emplace_task(
-            [j, blksz, nblks](auto a)
+            [blksz](auto a)
             {
                 spdlog::debug("dpotrf");
                 LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'L', blksz, *a, blksz);
@@ -172,7 +161,7 @@ int main(int argc, char* argv[])
         {
             // A[i,j] <- A[i,j] = X * (A[j,j])^t
             rg.emplace_task(
-                [blksz, nblks](auto a, auto b)
+                [blksz](auto a, auto b)
                 {
                     spdlog::debug("dtrsm");
                     cblas_dtrsm(

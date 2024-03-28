@@ -7,7 +7,6 @@
 #pragma once
 
 #include "redGrapes/TaskFreeCtx.hpp"
-#include "redGrapes/dispatch/thread/DefaultWorker.hpp"
 #include "redGrapes/memory/hwloc_alloc.hpp"
 #include "redGrapes/util/bitfield.hpp"
 
@@ -27,12 +26,15 @@ namespace redGrapes
                 AVAILABLE = 1
             };
 
-            template<typename TTask, typename Worker>
+            template<typename Worker>
             struct WorkerThread;
 
-            template<typename TTask, typename Worker>
+            template<typename Worker>
             struct WorkerPool
             {
+                using task_type = Worker::task_type;
+                using TTask = task_type;
+
                 WorkerPool(HwlocContext& hwloc_ctx, size_t n_workers);
                 ~WorkerPool();
 
@@ -53,7 +55,7 @@ namespace redGrapes
                  */
                 void stop();
 
-                inline WorkerThread<TTask, Worker>& get_worker_thread(WorkerId local_worker_id)
+                inline WorkerThread<Worker>& get_worker_thread(WorkerId local_worker_id)
                 {
                     assert(local_worker_id < size());
                     return *workers[local_worker_id];
@@ -96,7 +98,7 @@ namespace redGrapes
                  * task-graph in the emplacement queues of other workers
                  * and removes it from there
                  */
-                TTask* steal_new_task(dispatch::thread::DefaultWorker<TTask>& worker)
+                TTask* steal_new_task(Worker& worker)
                 {
                     std::optional<TTask*> task = probe_worker_by_state<TTask*>(
                         [&worker, this](unsigned idx) -> std::optional<TTask*>
@@ -127,7 +129,7 @@ namespace redGrapes
                 /* tries to find a ready task in any queue of other workers
                  * and removes it from the queue
                  */
-                TTask* steal_ready_task(dispatch::thread::DefaultWorker<TTask>& worker)
+                TTask* steal_ready_task(Worker& worker)
                 {
                     std::optional<TTask*> task = probe_worker_by_state<TTask*>(
                         [&worker, this](unsigned idx) -> std::optional<TTask*>
@@ -157,7 +159,7 @@ namespace redGrapes
 
                 // give worker a ready task if available
                 // @return task if a new task was found, nullptr otherwise
-                TTask* steal_task(dispatch::thread::DefaultWorker<TTask>& worker)
+                TTask* steal_task(Worker& worker)
                 {
                     unsigned local_worker_id = worker.id - m_base_id;
 
@@ -186,7 +188,7 @@ namespace redGrapes
 
 
             private:
-                std::vector<std::shared_ptr<dispatch::thread::WorkerThread<TTask, Worker>>> workers;
+                std::vector<std::shared_ptr<dispatch::thread::WorkerThread<Worker>>> workers;
                 HwlocContext& hwloc_ctx;
                 AtomicBitfield worker_state;
                 unsigned int num_workers;
@@ -197,3 +199,5 @@ namespace redGrapes
         } // namespace thread
     } // namespace dispatch
 } // namespace redGrapes
+
+#include "redGrapes/dispatch/thread/worker_pool.tpp"

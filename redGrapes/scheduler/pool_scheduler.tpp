@@ -18,23 +18,22 @@ namespace redGrapes
 {
     namespace scheduler
     {
-        template<typename TTask, typename Worker>
-        PoolScheduler<TTask, Worker>::PoolScheduler(unsigned num_workers)
+        template<typename Worker>
+        PoolScheduler<Worker>::PoolScheduler(unsigned num_workers)
             : n_workers(num_workers)
             , m_worker_pool(
-                  std::make_shared<dispatch::thread::WorkerPool<TTask, Worker>>(TaskFreeCtx::hwloc_ctx, num_workers))
+                  std::make_shared<dispatch::thread::WorkerPool<Worker>>(TaskFreeCtx::hwloc_ctx, num_workers))
         {
         }
 
-        template<typename TTask, typename Worker>
-        PoolScheduler<TTask, Worker>::PoolScheduler(
-            std::shared_ptr<dispatch::thread::WorkerPool<TTask, Worker>> workerPool)
+        template<typename Worker>
+        PoolScheduler<Worker>::PoolScheduler(std::shared_ptr<dispatch::thread::WorkerPool<Worker>> workerPool)
             : m_worker_pool(workerPool)
         {
         }
 
-        template<typename TTask, typename Worker>
-        void PoolScheduler<TTask, Worker>::idle()
+        template<typename Worker>
+        void PoolScheduler<Worker>::idle()
         {
             SPDLOG_TRACE("PoolScheduler::idle()");
 
@@ -49,8 +48,8 @@ namespace redGrapes
 
         /* send the new task to a worker
          */
-        template<typename TTask, typename Worker>
-        void PoolScheduler<TTask, Worker>::emplace_task(TTask& task)
+        template<typename Worker>
+        void PoolScheduler<Worker>::emplace_task(TTask& task)
         {
             // TODO: properly store affinity information in task
             WorkerId worker_id = task.worker_id - m_base_id;
@@ -85,8 +84,8 @@ namespace redGrapes
          * but only through follower-list so it is not assigned to a worker yet.
          * since this task is now ready, send find a worker for it
          */
-        template<typename TTask, typename Worker>
-        void PoolScheduler<TTask, Worker>::activate_task(TTask& task)
+        template<typename Worker>
+        void PoolScheduler<Worker>::activate_task(TTask& task)
         {
             //! worker id to use in case all workers are busy
             // TODO analyse and optimize
@@ -115,8 +114,8 @@ namespace redGrapes
          *
          * @return true if thread was indeed asleep
          */
-        template<typename TTask, typename Worker>
-        bool PoolScheduler<TTask, Worker>::wake(WakerId id)
+        template<typename Worker>
+        bool PoolScheduler<Worker>::wake(WakerId id)
         {
             if(id == 0)
                 return cv.notify();
@@ -129,16 +128,16 @@ namespace redGrapes
 
         /* wakeup all wakers (workers + main thread)
          */
-        template<typename TTask, typename Worker>
-        void PoolScheduler<TTask, Worker>::wake_all()
+        template<typename Worker>
+        void PoolScheduler<Worker>::wake_all()
         {
             wake(0);
             for(uint16_t i = m_base_id; i < m_base_id + n_workers; ++i)
                 wake(i);
         }
 
-        template<typename TTask, typename Worker>
-        unsigned PoolScheduler<TTask, Worker>::getNextWorkerID()
+        template<typename Worker>
+        unsigned PoolScheduler<Worker>::getNextWorkerID()
         {
             // TODO make atomic
             auto id = local_next_worker_id + m_base_id;
@@ -146,23 +145,23 @@ namespace redGrapes
             return id;
         }
 
-        template<typename TTask, typename Worker>
-        void PoolScheduler<TTask, Worker>::init(WorkerId base_id)
+        template<typename Worker>
+        void PoolScheduler<Worker>::init(WorkerId base_id)
         {
             // TODO check if it was already initalized
             m_base_id = base_id;
             m_worker_pool->emplace_workers(m_base_id);
         }
 
-        template<typename TTask, typename Worker>
-        void PoolScheduler<TTask, Worker>::startExecution()
+        template<typename Worker>
+        void PoolScheduler<Worker>::startExecution()
         {
             // TODO check if it was already started
             m_worker_pool->start();
         }
 
-        template<typename TTask, typename Worker>
-        void PoolScheduler<TTask, Worker>::stopExecution()
+        template<typename Worker>
+        void PoolScheduler<Worker>::stopExecution()
         {
             // TODO check if it was already stopped
             m_worker_pool->stop();

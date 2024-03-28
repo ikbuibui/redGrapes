@@ -44,3 +44,5 @@ void StopTracing(std::shared_ptr<perfetto::TracingSession> tracing_session);
 #    define TRACE_EVENT_END
 
 #endif
+
+#include <redGrapes/util/trace.tpp>

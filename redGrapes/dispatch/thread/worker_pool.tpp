@@ -21,16 +21,16 @@ namespace redGrapes
     {
         namespace thread
         {
-            template<typename TTask, typename Worker>
-            WorkerPool<TTask, Worker>::WorkerPool(HwlocContext& hwloc_ctx, size_t n_workers)
+            template<typename Worker>
+            WorkerPool<Worker>::WorkerPool(HwlocContext& hwloc_ctx, size_t n_workers)
                 : hwloc_ctx(hwloc_ctx)
                 , worker_state(n_workers)
                 , num_workers(n_workers)
             {
             }
 
-            template<typename TTask, typename Worker>
-            void WorkerPool<TTask, Worker>::emplace_workers(WorkerId base_id)
+            template<typename Worker>
+            void WorkerPool<Worker>::emplace_workers(WorkerId base_id)
             {
                 m_base_id = base_id;
                 if(num_workers > TaskFreeCtx::n_pus)
@@ -51,7 +51,7 @@ namespace redGrapes
                         memory::HwlocAlloc(TaskFreeCtx::hwloc_ctx, obj),
                         REDGRAPES_ALLOC_CHUNKSIZE);
 
-                    auto worker = memory::alloc_shared_bind<WorkerThread<TTask, Worker>>(
+                    auto worker = memory::alloc_shared_bind<WorkerThread<Worker>>(
                         worker_id,
                         TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id),
                         TaskFreeCtx::hwloc_ctx,
@@ -63,20 +63,20 @@ namespace redGrapes
                 }
             }
 
-            template<typename TTask, typename Worker>
-            WorkerPool<TTask, Worker>::~WorkerPool()
+            template<typename Worker>
+            WorkerPool<Worker>::~WorkerPool()
             {
             }
 
-            template<typename TTask, typename Worker>
-            void WorkerPool<TTask, Worker>::start()
+            template<typename Worker>
+            void WorkerPool<Worker>::start()
             {
                 for(auto& worker : workers)
                     worker->start();
             }
 
-            template<typename TTask, typename Worker>
-            void WorkerPool<TTask, Worker>::stop()
+            template<typename Worker>
+            void WorkerPool<Worker>::stop()
             {
                 for(auto& worker : workers)
                     worker->stop();
@@ -84,8 +84,8 @@ namespace redGrapes
                 workers.clear();
             }
 
-            template<typename TTask, typename Worker>
-            int WorkerPool<TTask, Worker>::find_free_worker()
+            template<typename Worker>
+            int WorkerPool<Worker>::find_free_worker()
             {
                 TRACE_EVENT("Scheduler", "find_worker");
 

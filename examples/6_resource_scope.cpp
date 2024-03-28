@@ -8,6 +8,8 @@
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/ioresource.hpp>
 
+#include <iostream>
+
 namespace rg = redGrapes;
 
 int main()

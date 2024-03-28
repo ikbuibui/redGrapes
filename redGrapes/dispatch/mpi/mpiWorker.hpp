@@ -23,6 +23,7 @@ namespace redGrapes
             template<typename TTask>
             struct MPIWorker
             {
+                using task_type = TTask;
                 std::shared_ptr<RequestPool<TTask>> requestPool;
                 WorkerId id;
 

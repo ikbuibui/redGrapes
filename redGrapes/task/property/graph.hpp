@@ -197,3 +197,5 @@ struct fmt::formatter<redGrapes::GraphProperty<TTask>>
         return ctx.out();
     }
 };
+
+#include "redGrapes/task/property/graph.tpp"

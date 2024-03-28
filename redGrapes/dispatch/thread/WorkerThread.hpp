@@ -18,7 +18,7 @@
 
 namespace redGrapes::dispatch::thread
 {
-    template<typename TTask, typename Worker>
+    template<typename Worker>
     struct WorkerThread
     {
         std::thread thread;
@@ -48,7 +48,7 @@ namespace redGrapes::dispatch::thread
             hwloc_obj_t const obj,
             WorkerId worker_id,
             AtomicBitfield& worker_state,
-            WorkerPool<TTask, Worker>& worker_pool)
+            WorkerPool<Worker>& worker_pool)
             : alloc(alloc)
             , hwloc_ctx(hwloc_ctx)
             , obj{obj}

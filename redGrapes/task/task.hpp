@@ -18,7 +18,7 @@ namespace redGrapes
 {
 
     template<typename T>
-    concept C_TaskProperty = requires(T taskProp, T::Patch patch)
+    concept C_TaskProperty = requires(T taskProp, typename T::Patch patch)
     {
         {
             taskProp.apply_patch(patch)

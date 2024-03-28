@@ -43,9 +43,8 @@ namespace redGrapes
     };
 
     template<typename TTask>
-    class ResourceUser
+    struct ResourceUser
     {
-    public:
         ResourceUser();
         ResourceUser(ResourceUser const& other);
         ResourceUser(std::initializer_list<ResourceAccess<TTask>> list);
@@ -55,14 +54,25 @@ namespace redGrapes
         void build_unique_resource_list();
         bool has_sync_access(std::shared_ptr<ResourceBase<TTask>> const& res);
         bool is_superset_of(ResourceUser const& a) const;
-        static bool is_superset(ResourceUser const& a, ResourceUser const& b);
-        static bool is_serial(ResourceUser const& a, ResourceUser const& b);
+
+        friend bool is_serial(ResourceUser const& a, ResourceUser const& b)
+        {
+            TRACE_EVENT("ResourceUser", "is_serial");
+            for(auto ra = a.access_list.crbegin(); ra != a.access_list.crend(); ++ra)
+                for(auto rb = b.access_list.crbegin(); rb != b.access_list.crend(); ++rb)
+                {
+                    TRACE_EVENT("ResourceUser", "RA::is_serial");
+                    if(ResourceAccess<TTask>::is_serial(*ra, *rb))
+                        return true;
+                }
+            return false;
+        }
 
         uint8_t scope_level;
 
         ChunkedList<ResourceAccess<TTask>, 8> access_list;
         ChunkedList<ResourceUsageEntry<TTask>, 8> unique_resources;
-    }; // class ResourceUser
+    }; // struct ResourceUser
 
 } // namespace redGrapes
 
@@ -91,3 +101,5 @@ struct fmt::formatter<redGrapes::ResourceUser<TTask>>
         return out;
     }
 };
+
+#include "redGrapes/resource/resource_user.tpp"

@@ -10,6 +10,11 @@
 #include "redGrapes/memory/chunked_bump_alloc.hpp"
 #include "redGrapes/memory/hwloc_alloc.hpp"
 
+#include <functional>
+#include <memory>
+#include <optional>
+#include <vector>
+
 namespace redGrapes
 {
 

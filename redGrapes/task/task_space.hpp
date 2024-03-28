@@ -9,7 +9,6 @@
 
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/memory/block.hpp"
-#include "redGrapes/resource/resource_user.hpp"
 #include "redGrapes/scheduler/scheduler.hpp"
 #include "redGrapes/util/trace.hpp"
 
@@ -34,10 +33,6 @@ namespace redGrapes
         std::shared_mutex active_child_spaces_mutex;
         std::vector<std::shared_ptr<TaskSpace<TTask>>> active_child_spaces;
 
-        virtual ~TaskSpace()
-        {
-        }
-
         // top space
         TaskSpace() : depth(0), parent(nullptr)
         {
@@ -51,16 +46,6 @@ namespace redGrapes
             task_count = 0;
         }
 
-        virtual bool is_serial(TTask& a, TTask& b)
-        {
-            return ResourceUser<TTask>::is_serial(a, b);
-        }
-
-        virtual bool is_superset(TTask& a, TTask& b)
-        {
-            return ResourceUser<TTask>::is_superset(a, b);
-        }
-
         // add a new task to the task-space
         void submit(TTask* task)
         {
@@ -71,7 +56,7 @@ namespace redGrapes
             ++task_count;
 
             if(parent)
-                assert(this->is_superset(*parent, *task));
+                assert(parent->is_superset_of(*task));
 
             for(auto r = task->unique_resources.rbegin(); r != task->unique_resources.rend(); ++r)
             {

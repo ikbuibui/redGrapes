@@ -61,7 +61,7 @@ namespace redGrapes
                     if(preceding_task == space->parent)
                         break;
 
-                    if(preceding_task->space == space && space->is_serial(*preceding_task, *task))
+                    if(preceding_task->space == space && is_serial(*preceding_task, *task))
                     {
                         add_dependency(*preceding_task);
                         if(preceding_task->has_sync_access(r->resource))
@@ -120,7 +120,7 @@ namespace redGrapes
             scheduler::EventPtr<TTask> follower = *it;
             if(follower.task)
             {
-                if(!space->is_serial(*task, *follower.task))
+                if(!is_serial(*task, *follower.task))
                 {
                     // remove dependency
                     // follower.task->in_edges.erase(std::find(std::begin(follower.task->in_edges),

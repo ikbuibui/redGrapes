@@ -27,10 +27,10 @@ int main(int, char*[])
 
     redGrapes::ResourceUser<TTask> user3({b.read(), c.write()});
 
-    std::cout << "is_serial(user1,user1) = " << redGrapes::ResourceUser<TTask>::is_serial(user1, user1) << std::endl;
-    std::cout << "is_serial(user1,user2) = " << redGrapes::ResourceUser<TTask>::is_serial(user1, user2) << std::endl;
-    std::cout << "is_serial(user1,user3) = " << redGrapes::ResourceUser<TTask>::is_serial(user1, user3) << std::endl;
-    std::cout << "is_serial(user2,user3) = " << redGrapes::ResourceUser<TTask>::is_serial(user2, user3) << std::endl;
+    std::cout << "is_serial(user1,user1) = " << is_serial(user1, user1) << std::endl;
+    std::cout << "is_serial(user1,user2) = " << is_serial(user1, user2) << std::endl;
+    std::cout << "is_serial(user1,user3) = " << is_serial(user1, user3) << std::endl;
+    std::cout << "is_serial(user2,user3) = " << is_serial(user2, user3) << std::endl;
 
     return 0;
 }

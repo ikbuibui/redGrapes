@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+#define ENABLE_WORKSTEALING 1
 
 #include <redGrapes/SchedulerDescription.hpp>
 #include <redGrapes/dispatch/mpi/mpiWorker.hpp>
@@ -13,6 +14,8 @@
 #include <redGrapes/scheduler/pool_scheduler.hpp>
 #include <redGrapes/scheduler/thread_scheduler.hpp>
 #include <redGrapes/task/property/label.hpp>
+
+#include <iostream>
 
 /**
  * This example shows how to use MPI with redGrapes.
@@ -40,8 +43,6 @@ enum SchedulerTags
     SCHED_CUDA
 };
 
-#define ENABLE_WORKSTEALING 1
-
 struct MPIConfig
 {
     int world_rank;
@@ -64,16 +65,15 @@ int main()
 
     auto rg = redGrapes::init(
         redGrapes::SchedulerDescription(
-            std::make_shared<
-                redGrapes::scheduler::PoolScheduler<RGTask, redGrapes::dispatch::thread::DefaultWorker<RGTask>>>(17),
+            std::make_shared<redGrapes::scheduler::PoolScheduler<redGrapes::dispatch::thread::DefaultWorker<RGTask>>>(
+                17),
             UselessWorkers{}),
         redGrapes::SchedulerDescription(
-            std::make_shared<
-                redGrapes::scheduler::PoolScheduler<RGTask, redGrapes::dispatch::thread::DefaultWorker<RGTask>>>(4),
+            std::make_shared<redGrapes::scheduler::PoolScheduler<redGrapes::dispatch::thread::DefaultWorker<RGTask>>>(
+                4),
             redGrapes::DefaultTag{}),
         redGrapes::SchedulerDescription(
-            std::make_shared<
-                redGrapes::scheduler::ThreadScheduler<RGTask, redGrapes::dispatch::mpi::MPIWorker<RGTask>>>(),
+            std::make_shared<redGrapes::scheduler::ThreadScheduler<redGrapes::dispatch::mpi::MPIWorker<RGTask>>>(),
             MPITag{}));
 
 

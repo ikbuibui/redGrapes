@@ -114,3 +114,6 @@ namespace redGrapes
     } // namespace scheduler
 
 } // namespace redGrapes
+
+#include "redGrapes/scheduler/event.tpp"
+#include "redGrapes/scheduler/event_ptr.tpp"

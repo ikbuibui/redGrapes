@@ -14,7 +14,6 @@
 #include <fmt/format.h>
 
 #include <array>
-#include <iostream>
 #include <utility>
 
 namespace redGrapes

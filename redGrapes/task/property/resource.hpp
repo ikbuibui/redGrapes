@@ -134,25 +134,6 @@ namespace redGrapes
         }
     };
 
-    template<typename TTask>
-    struct ResourcePrecedencePolicy
-    {
-        static bool is_serial(ResourceProperty<TTask> const& a, ResourceProperty<TTask> const& b)
-        {
-            return redGrapes::ResourceUser<TTask>::is_serial(a, b);
-        }
-
-        static void assert_superset(ResourceProperty<TTask> const& super, ResourceProperty<TTask> const& sub)
-        {
-            if(!redGrapes::ResourceUser<TTask>::is_superset(super, sub))
-            {
-                auto msg = fmt::format("Not allowed: {} is no superset of {}\n", super, sub);
-                spdlog::error(msg);
-                throw std::runtime_error(msg);
-            }
-        }
-    };
-
 } // namespace redGrapes
 
 template<typename TTask>
@@ -166,6 +147,6 @@ struct fmt::formatter<redGrapes::ResourceProperty<TTask>>
     template<typename FormatContext>
     auto format(redGrapes::ResourceProperty<TTask> const& label_prop, FormatContext& ctx)
     {
-        return format_to(ctx.out(), "\"resources\" : {}", (redGrapes::ResourceUser<TTask> const&) label_prop);
+        return fmt::format_to(ctx.out(), "\"resources\" : {}", (redGrapes::ResourceUser<TTask> const&) label_prop);
     }
 };

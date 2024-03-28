@@ -16,6 +16,7 @@
 #include "redGrapes/scheduler/event.hpp"
 #include "redGrapes/scheduler/pool_scheduler.hpp"
 #include "redGrapes/task/task.hpp"
+#include "redGrapes/task/task_builder.hpp"
 #include "redGrapes/task/task_space.hpp"
 #include "redGrapes/util/bind_args.hpp"
 #include "redGrapes/util/tuple_map.hpp"
@@ -25,9 +26,6 @@
 
 #include <memory>
 #include <new>
-
-// `TaskBuilder` needs "RedGrapes`, so can only include here after definiton
-#include "redGrapes/task/task_builder.hpp" // TODO change this to needs LocalImpl
 
 namespace redGrapes
 {
@@ -219,22 +217,22 @@ namespace redGrapes
     };
 
     // TODO make sure init can only be called once
-    template<C_TaskProperty... UserTaskProps, C_Exec... Ts>
-    [[nodiscard]] inline auto init(Ts... execDescs)
+    // require atleast one T execDesc
+    template<C_TaskProperty... UserTaskProps, C_Exec T, C_Exec... Ts>
+    [[nodiscard]] inline auto init(T execDesc, Ts... execDescs)
     {
-        using DescType = boost::mp11::mp_list<Ts...>;
+        using DescType = boost::mp11::mp_list<T, Ts...>;
         using DescMap = boost::mp11::mp_transform<MakeKeyValList, DescType>;
 
-        return RedGrapes<DescMap, UserTaskProps...>(execDescs...);
+        return RedGrapes<DescMap, UserTaskProps...>(execDesc, execDescs...);
     }
 
     template<C_TaskProperty... UserTaskProps>
     [[nodiscard]] inline auto init(size_t n_workers = std::thread::hardware_concurrency())
     {
         auto execDesc = SchedulerDescription(
-            std::make_shared<scheduler::PoolScheduler<
-                Task<UserTaskProps...>,
-                dispatch::thread::DefaultWorker<Task<UserTaskProps...>>>>(n_workers),
+            std::make_shared<scheduler::PoolScheduler<dispatch::thread::DefaultWorker<Task<UserTaskProps...>>>>(
+                n_workers),
             DefaultTag{});
         using DescType = boost::mp11::mp_list<decltype(execDesc)>;
         using DescMap = boost::mp11::mp_transform<MakeKeyValList, DescType>;
@@ -245,12 +243,4 @@ namespace redGrapes
 
 } // namespace redGrapes
 
-#include "redGrapes/dispatch/thread/DefaultWorker.tpp"
-#include "redGrapes/dispatch/thread/worker_pool.tpp"
 #include "redGrapes/redGrapes.tpp"
-#include "redGrapes/resource/resource_user.tpp"
-#include "redGrapes/scheduler/event.tpp"
-#include "redGrapes/scheduler/event_ptr.tpp"
-#include "redGrapes/scheduler/pool_scheduler.tpp"
-#include "redGrapes/task/property/graph.tpp"
-#include "redGrapes/util/trace.tpp"

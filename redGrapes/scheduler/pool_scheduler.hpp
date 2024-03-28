@@ -24,17 +24,18 @@ namespace redGrapes
          * Uses simple round-robin algorithm to distribute tasks to workers
          * and implements work-stealing
          */
-        template<typename TTask, typename Worker>
-        struct PoolScheduler : public IScheduler<TTask>
+        template<typename Worker>
+        struct PoolScheduler : public IScheduler<typename Worker::task_type>
         {
+            using TTask = Worker::task_type;
             WorkerId m_base_id;
             CondVar cv;
             WorkerId local_next_worker_id = 0;
             unsigned n_workers;
-            std::shared_ptr<dispatch::thread::WorkerPool<TTask, Worker>> m_worker_pool;
+            std::shared_ptr<dispatch::thread::WorkerPool<Worker>> m_worker_pool;
 
             PoolScheduler(unsigned num_workers);
-            PoolScheduler(std::shared_ptr<dispatch::thread::WorkerPool<TTask, Worker>> workerPool);
+            PoolScheduler(std::shared_ptr<dispatch::thread::WorkerPool<Worker>> workerPool);
 
             void idle();
 
@@ -73,3 +74,5 @@ namespace redGrapes
     } // namespace scheduler
 
 } // namespace redGrapes
+
+#include "redGrapes/scheduler/pool_scheduler.tpp"

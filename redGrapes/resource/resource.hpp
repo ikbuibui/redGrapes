@@ -215,13 +215,16 @@ namespace redGrapes
         };
     } // namespace trait
 
-    struct DefaultAccessPolicy
+    namespace access
     {
-        static bool is_serial(DefaultAccessPolicy, DefaultAccessPolicy)
+        struct DefaultAccessPolicy
         {
-            return true;
-        }
-    };
+            static bool is_serial(DefaultAccessPolicy, DefaultAccessPolicy)
+            {
+                return true;
+            }
+        };
+    } // namespace access
 
     /**
      * @defgroup AccessPolicy
@@ -250,7 +253,7 @@ namespace redGrapes
      * Represents a concrete resource.
      * Copied objects represent the same resource.
      */
-    template<typename TTask, typename AccessPolicy = DefaultAccessPolicy>
+    template<typename TTask, typename AccessPolicy = access::DefaultAccessPolicy>
     class Resource
     {
     protected:

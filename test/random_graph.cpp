@@ -111,7 +111,7 @@ TEST_CASE("RandomGraph")
             switch(access_pattern[i].size())
             {
             case 0:
-                rg.emplace_task([i]() { sleep(task_duration); });
+                rg.emplace_task([]() { sleep(task_duration); });
                 break;
 
             case 1:

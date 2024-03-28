@@ -55,7 +55,7 @@ if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
 
     add_executable(cuda_mandelbrot cuda_mandelbrot.cu)
-    target_compile_features(cuda_mandelbrot PUBLIC cuda_std_14)
+    target_compile_features(cuda_mandelbrot PUBLIC cxx_std_${redGrapes_CXX_STANDARD})
     set_target_properties(cuda_mandelbrot PROPERTIES
         CUDA_EXTENSIONS OFF
         CUDA_STANDARD_REQUIRED ON

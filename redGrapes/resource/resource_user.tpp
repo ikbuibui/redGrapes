@@ -6,6 +6,7 @@
  */
 
 #pragma once
+
 #include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/resource/resource.hpp"
 #include "redGrapes/resource/resource_user.hpp"
@@ -82,20 +83,6 @@ namespace redGrapes
     }
 
     template<typename TTask>
-    bool ResourceUser<TTask>::is_serial(ResourceUser<TTask> const& a, ResourceUser<TTask> const& b)
-    {
-        TRACE_EVENT("ResourceUser", "is_serial");
-        for(auto ra = a.access_list.crbegin(); ra != a.access_list.crend(); ++ra)
-            for(auto rb = b.access_list.crbegin(); rb != b.access_list.crend(); ++rb)
-            {
-                TRACE_EVENT("ResourceUser", "RA::is_serial");
-                if(ResourceAccess<TTask>::is_serial(*ra, *rb))
-                    return true;
-            }
-        return false;
-    }
-
-    template<typename TTask>
     bool ResourceUser<TTask>::is_superset_of(ResourceUser<TTask> const& a) const
     {
         TRACE_EVENT("ResourceUser", "is_superset");
@@ -111,12 +98,6 @@ namespace redGrapes
                 return false;
         }
         return true;
-    }
-
-    template<typename TTask>
-    bool ResourceUser<TTask>::is_superset(ResourceUser<TTask> const& a, ResourceUser<TTask> const& b)
-    {
-        return a.is_superset_of(b);
     }
 
 } // namespace redGrapes
