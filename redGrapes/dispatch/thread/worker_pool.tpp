@@ -22,10 +22,8 @@ namespace redGrapes
         namespace thread
         {
             template<typename Worker>
-            WorkerPool<Worker>::WorkerPool(HwlocContext& hwloc_ctx, size_t n_workers)
-                : hwloc_ctx(hwloc_ctx)
-                , worker_state(n_workers)
-                , num_workers(n_workers)
+            WorkerPool<Worker>::WorkerPool(size_t n_workers) : worker_state(n_workers)
+                                                             , num_workers(n_workers)
             {
             }
 
@@ -53,8 +51,6 @@ namespace redGrapes
 
                     auto worker = memory::alloc_shared_bind<WorkerThread<Worker>>(
                         worker_id,
-                        TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id),
-                        TaskFreeCtx::hwloc_ctx,
                         obj,
                         worker_id,
                         worker_state,

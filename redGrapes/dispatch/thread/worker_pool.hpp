@@ -35,7 +35,7 @@ namespace redGrapes
                 using task_type = Worker::task_type;
                 using TTask = task_type;
 
-                WorkerPool(HwlocContext& hwloc_ctx, size_t n_workers);
+                WorkerPool(size_t n_workers);
                 ~WorkerPool();
 
                 void emplace_workers(WorkerId base_id);
@@ -189,7 +189,7 @@ namespace redGrapes
 
             private:
                 std::vector<std::shared_ptr<dispatch::thread::WorkerThread<Worker>>> workers;
-                HwlocContext& hwloc_ctx;
+                HwlocContext* hwloc_ctx_p;
                 AtomicBitfield worker_state;
                 unsigned int num_workers;
                 WorkerId m_base_id;

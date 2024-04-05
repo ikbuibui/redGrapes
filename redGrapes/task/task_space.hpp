@@ -9,13 +9,10 @@
 
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/memory/block.hpp"
-#include "redGrapes/scheduler/scheduler.hpp"
 #include "redGrapes/util/trace.hpp"
 
 #include <atomic>
 #include <memory>
-#include <shared_mutex>
-#include <vector>
 
 namespace redGrapes
 {
@@ -29,9 +26,6 @@ namespace redGrapes
 
         unsigned depth;
         TTask* parent;
-
-        std::shared_mutex active_child_spaces_mutex;
-        std::vector<std::shared_ptr<TaskSpace<TTask>>> active_child_spaces;
 
         // top space
         TaskSpace() : depth(0), parent(nullptr)
@@ -62,8 +56,6 @@ namespace redGrapes
             {
                 r->task_entry = r->resource->users.push(task);
             }
-
-            task->scheduler.emplace_task(*task);
         }
 
         // remove task from task-space
@@ -73,7 +65,7 @@ namespace redGrapes
             unsigned count = task_count.fetch_sub(1) - 1;
 
             unsigned worker_id = task->worker_id;
-            scheduler::IScheduler<TTask>& task_scheduler = task->scheduler;
+            auto task_scheduler_p = task->scheduler_p;
             task->~TTask(); // TODO check if this is really required
 
             // FIXME: len of the Block is not correct since FunTask object is bigger than sizeof(Task)
@@ -86,7 +78,7 @@ namespace redGrapes
             //  -> never have current_task = nullptr
             // spdlog::info("kill task... {} remaining", count);
             if(count == 0)
-                task_scheduler.wake_all(); // TODO think if this should call wake_all on all schedulers
+                task_scheduler_p->wake_all(); // TODO think if this should call wake_all on all schedulers
         }
 
         bool empty() const

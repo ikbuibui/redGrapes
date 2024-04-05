@@ -152,7 +152,7 @@ namespace redGrapes
                 if(tag == scheduler::T_EVT_PRE && state == 1)
                 {
                     if(!claimed)
-                        task->scheduler.activate_task(*task);
+                        task->scheduler_p->activate_task(*task);
                 }
 
                 // post event reached:
@@ -164,7 +164,7 @@ namespace redGrapes
             // TODO rework this to reduce if(task) checks
             // if event is ready or reached (state ∈ {0,1})
             if(state <= 1 && get_event().waker_id >= 0)
-                task->scheduler.wake(get_event().waker_id);
+                task->scheduler_p->wake(get_event().waker_id);
 
             if(state == 0)
             {

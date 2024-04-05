@@ -101,7 +101,7 @@ namespace redGrapes
         // in_edges.push_back(&preceding_task);
 
         // scheduling graph
-        auto preceding_event = task->scheduler.task_dependency_type(preceding_task, *task)
+        auto preceding_event = task->scheduler_p->task_dependency_type(preceding_task, *task)
                                    ? preceding_task->get_pre_event()
                                    : preceding_task->get_post_event();
 

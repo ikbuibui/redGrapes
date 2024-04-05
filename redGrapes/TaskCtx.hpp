@@ -10,7 +10,6 @@
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/scheduler/event.hpp"
 #include "redGrapes/task/task_space.hpp"
-#include "redGrapes/util/trace.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -33,7 +32,7 @@ namespace redGrapes
             }
             else
             {
-                event->waker_id = event.task->scheduler.getNextWorkerID();
+                event->waker_id = event.task->scheduler_p->getNextWorkerID();
                 while(!event->is_reached())
                     TaskFreeCtx::idle();
             }
@@ -62,9 +61,6 @@ namespace redGrapes
                     auto task_space = std::make_shared<TaskSpace<TTask>>(current_task);
                     SPDLOG_TRACE("create child space = {}", (void*) task_space.get());
                     current_task->children = task_space;
-
-                    std::unique_lock<std::shared_mutex> wr_lock(current_task->space->active_child_spaces_mutex);
-                    current_task->space->active_child_spaces.push_back(task_space);
                 }
 
                 return current_task->children;
@@ -83,11 +79,6 @@ namespace redGrapes
 
         static inline thread_local TTask* current_task;
         static inline std::shared_ptr<TaskSpace<TTask>> root_space;
-
-
-#if REDGRAPES_ENABLE_TRACE
-        static std::shared_ptr<perfetto::TracingSession> tracing_session;
-#endif
     };
 
 } // namespace redGrapes

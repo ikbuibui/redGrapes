@@ -8,7 +8,6 @@
 #pragma once
 
 #include "redGrapes/TaskFreeCtx.hpp"
-#include "redGrapes/dispatch/mpi/request_pool.hpp"
 #include "redGrapes/dispatch/thread/WorkerThread.hpp"
 #include "redGrapes/scheduler/scheduler.hpp"
 #include "redGrapes/sync/cv.hpp"
@@ -22,10 +21,6 @@ namespace redGrapes
     namespace scheduler
     {
 
-        /*
-         * Uses simple round-robin algorithm to distribute tasks to workers
-         * and implements work-stealing
-         */
         template<typename Worker>
         struct ThreadScheduler : public IScheduler<typename Worker::task_type>
         {
@@ -110,7 +105,7 @@ namespace redGrapes
                 return m_base_id;
             }
 
-            void init(WorkerId base_id)
+            virtual void init(WorkerId base_id)
             {
                 m_base_id = base_id;
                 // TODO check if it was already initalized
@@ -123,14 +118,9 @@ namespace redGrapes
                         memory::HwlocAlloc(TaskFreeCtx::hwloc_ctx, obj),
                         REDGRAPES_ALLOC_CHUNKSIZE);
 
-                    m_worker_thread = memory::alloc_shared_bind<dispatch::thread::WorkerThread<Worker>>(
-                        m_base_id,
-                        TaskFreeCtx::worker_alloc_pool->get_alloc(m_base_id),
-                        TaskFreeCtx::hwloc_ctx,
-                        obj,
-                        m_base_id);
+                    m_worker_thread
+                        = memory::alloc_shared_bind<dispatch::thread::WorkerThread<Worker>>(m_base_id, obj, m_base_id);
                 }
-                // m_worker_pool->emplace_workers();
             }
 
             void startExecution()
@@ -141,12 +131,6 @@ namespace redGrapes
             void stopExecution()
             {
                 m_worker_thread->stop();
-            }
-
-            // if worker is  MPI worker
-            std::shared_ptr<dispatch::mpi::RequestPool<TTask>> getRequestPool()
-            {
-                return m_worker_thread->worker->requestPool;
             }
         };
 

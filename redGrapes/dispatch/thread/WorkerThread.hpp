@@ -22,38 +22,15 @@ namespace redGrapes::dispatch::thread
     struct WorkerThread
     {
         std::thread thread;
-        memory::ChunkedBumpAlloc<memory::HwlocAlloc>& alloc;
-        HwlocContext& hwloc_ctx;
         hwloc_obj_t const obj; // storing this vs calculating this as
         // hwloc_obj_t obj
         //     = hwloc_get_obj_by_type(TaskFreeCtx::hwloc_ctx.topology, HWLOC_OBJ_PU, this->id % TaskFreeCtx::n_pus);
         std::shared_ptr<Worker> worker;
 
-        WorkerThread(
-            memory::ChunkedBumpAlloc<memory::HwlocAlloc>& alloc,
-            HwlocContext& hwloc_ctx,
-            hwloc_obj_t const obj,
-            WorkerId worker_id)
-            : alloc(alloc)
-            , hwloc_ctx(hwloc_ctx)
-            , obj{obj}
+        template<typename... Args>
+        WorkerThread(hwloc_obj_t const obj, Args&&... args) : obj{obj}
         {
-            worker = std::make_shared<Worker>(worker_id);
-        }
-
-        // requires pool worker
-        WorkerThread(
-            memory::ChunkedBumpAlloc<memory::HwlocAlloc>& alloc,
-            HwlocContext& hwloc_ctx,
-            hwloc_obj_t const obj,
-            WorkerId worker_id,
-            AtomicBitfield& worker_state,
-            WorkerPool<Worker>& worker_pool)
-            : alloc(alloc)
-            , hwloc_ctx(hwloc_ctx)
-            , obj{obj}
-        {
-            worker = std::make_shared<Worker>(worker_id, worker_state, worker_pool);
+            worker = std::make_shared<Worker>(std::forward<Args>(args)...);
         }
 
         ~WorkerThread()

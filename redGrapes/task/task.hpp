@@ -47,11 +47,11 @@ namespace redGrapes
         // worker id where task is first emplaced and task memory is located (may be stolen later)
         unsigned worker_id;
         std::atomic_int removal_countdown;
-        scheduler::IScheduler<Task<UserTaskProperties...>>& scheduler;
+        scheduler::IScheduler<Task<UserTaskProperties...>>* scheduler_p;
 
         Task(scheduler::IScheduler<Task<UserTaskProperties...>>& scheduler)
             : removal_countdown(2)
-            , scheduler(scheduler)
+            , scheduler_p(&scheduler)
         {
         }
 

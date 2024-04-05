@@ -11,8 +11,8 @@
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/fieldresource.hpp>
 #include <redGrapes/resource/ioresource.hpp>
+#include <redGrapes/scheduler/mpi_thread_scheduler.hpp>
 #include <redGrapes/scheduler/pool_scheduler.hpp>
-#include <redGrapes/scheduler/thread_scheduler.hpp>
 #include <redGrapes/task/property/label.hpp>
 
 #include <iostream>
@@ -73,7 +73,7 @@ int main()
                 4),
             redGrapes::DefaultTag{}),
         redGrapes::SchedulerDescription(
-            std::make_shared<redGrapes::scheduler::ThreadScheduler<redGrapes::dispatch::mpi::MPIWorker<RGTask>>>(),
+            std::make_shared<redGrapes::scheduler::MPIThreadScheduler<RGTask>>(),
             MPITag{}));
 
 

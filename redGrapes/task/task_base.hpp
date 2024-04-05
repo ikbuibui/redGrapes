@@ -11,10 +11,8 @@
 
 #include <boost/context/continuation.hpp>
 
-#include <functional>
 #include <mutex>
 #include <optional>
-#include <vector>
 
 namespace redGrapes
 {
@@ -22,14 +20,13 @@ namespace redGrapes
     template<typename TTask>
     struct TaskBase
     {
-        bool finished;
         bool enable_stack_switching;
 
         virtual ~TaskBase()
         {
         }
 
-        TaskBase() : finished(false), enable_stack_switching(false)
+        TaskBase() : enable_stack_switching(false)
         {
         }
 

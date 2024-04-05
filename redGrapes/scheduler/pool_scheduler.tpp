@@ -21,8 +21,7 @@ namespace redGrapes
         template<typename Worker>
         PoolScheduler<Worker>::PoolScheduler(unsigned num_workers)
             : n_workers(num_workers)
-            , m_worker_pool(
-                  std::make_shared<dispatch::thread::WorkerPool<Worker>>(TaskFreeCtx::hwloc_ctx, num_workers))
+            , m_worker_pool(std::make_shared<dispatch::thread::WorkerPool<Worker>>(num_workers))
         {
         }
 

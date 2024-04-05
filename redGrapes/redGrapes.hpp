@@ -214,6 +214,9 @@ namespace redGrapes
 
     private:
         MapTuple<TSchedMap> scheduler_map;
+#if REDGRAPES_ENABLE_TRACE
+        std::shared_ptr<perfetto::TracingSession> tracing_session;
+#endif
     };
 
     // TODO make sure init can only be called once

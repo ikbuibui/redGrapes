@@ -40,8 +40,8 @@ namespace redGrapes
                 using task_type = TTask;
                 // private:
                 WorkerId id;
-                AtomicBitfield& m_worker_state;
-                WorkerPool<DefaultWorker>& m_worker_pool;
+                AtomicBitfield* worker_state_p;
+                WorkerPool<DefaultWorker>* worker_pool_p;
 
                 /*! if true, the thread shall stop
                  * instead of waiting when it is out of jobs
@@ -60,8 +60,8 @@ namespace redGrapes
 
                 DefaultWorker(WorkerId worker_id, AtomicBitfield& worker_state, WorkerPool<DefaultWorker>& worker_pool)
                     : id(worker_id)
-                    , m_worker_state(worker_state)
-                    , m_worker_pool(worker_pool)
+                    , worker_state_p(&worker_state)
+                    , worker_pool_p(&worker_pool)
                 {
                 }
 

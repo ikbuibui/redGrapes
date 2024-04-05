@@ -101,6 +101,7 @@ namespace redGrapes
 
             SPDLOG_TRACE("submit task {}", (TTask::TaskProperties const&) *t);
             space->submit(t);
+            t->scheduler_p->emplace_task(*t);
 
             return std::move(Future<Result, TTask>(*t));
         }
