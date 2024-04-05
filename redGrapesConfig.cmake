@@ -53,7 +53,7 @@ if( NOT TARGET redGrapes )
   if(MSVC)
     target_compile_options(redGrapes INTERFACE /W4 /WX)
   else()
-    target_compile_options(redGrapes INTERFACE -Wall -Wextra -Wpedantic)
+    target_compile_options(redGrapes INTERFACE -Wall -Wextra)
 endif()
 
 endif()

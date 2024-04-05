@@ -1,4 +1,4 @@
-/* Copyright 2020 Michael Sippel
+/* Copyright 2020-2024 Michael Sippel, Tapish Narwal
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,6 +6,8 @@
  */
 
 #pragma once
+
+#include <cuda.h>
 
 #include <mutex>
 #include <vector>
@@ -26,12 +28,6 @@ namespace redGrapes
 
                 EventPool()
                 {
-                }
-
-                static EventPool& get()
-                {
-                    static EventPool singleton;
-                    return singleton;
                 }
 
                 ~EventPool()

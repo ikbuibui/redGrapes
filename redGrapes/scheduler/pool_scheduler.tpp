@@ -116,11 +116,12 @@ namespace redGrapes
         template<typename Worker>
         bool PoolScheduler<Worker>::wake(WakerId id)
         {
-            if(id == 0)
+            auto local_waker_id = id - m_base_id;
+            if(local_waker_id == 0)
                 return cv.notify();
             // TODO analyse and optimize
-            else if(id > 0 && id - m_base_id <= n_workers)
-                return m_worker_pool->get_worker_thread(id - m_base_id - 1).worker->wake();
+            else if(local_waker_id > 0 && local_waker_id <= n_workers)
+                return m_worker_pool->get_worker_thread(local_waker_id - 1).worker->wake();
             else
                 return false;
         }

@@ -1,4 +1,4 @@
-/* Copyright 2020 Michael Sippel
+/* Copyright 2024 Tapish Narwal
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,6 +6,8 @@
  */
 
 #pragma once
+
+#include <optional>
 
 namespace redGrapes
 {
@@ -16,7 +18,7 @@ namespace redGrapes
 
             struct CudaTaskProperties
             {
-                std::optional<cudaEvent_t> cuda_event;
+                std::optional<unsigned> m_cuda_stream_idx;
 
                 CudaTaskProperties()
                 {
@@ -29,6 +31,12 @@ namespace redGrapes
 
                     Builder(PropertiesBuilder& b) : builder(b)
                     {
+                    }
+
+                    PropertiesBuilder& cuda_stream_index(unsigned cuda_stream_idx)
+                    {
+                        *(builder.task->m_cuda_stream_idx) = cuda_stream_idx;
+                        return builder;
                     }
                 };
 
