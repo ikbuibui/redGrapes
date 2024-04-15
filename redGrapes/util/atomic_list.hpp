@@ -1,4 +1,4 @@
-/* Copyright 2023 Michael Sippel
+/* Copyright 2023-2024 Michael Sippel, Tapish Narwal
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <redGrapes/memory/block.hpp>
-#include <redGrapes/util/trace.hpp>
+#include "redGrapes/memory/block.hpp"
+#include "redGrapes/util/trace.hpp"
 
 #include <fmt/format.h>
 #include <hwloc.h>
@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <optional>
 
 namespace redGrapes
 {
@@ -298,8 +297,7 @@ namespace redGrapes
                 {
                     old_head = std::atomic_load(&head);
                     std::atomic_store(&new_head->prev, old_head);
-                    append_successful
-                        = std::atomic_compare_exchange_strong<ItemControlBlock>(&head, &old_head, new_head);
+                    append_successful = std::atomic_compare_exchange_strong(&head, &old_head, new_head);
                 }
 
                 return MutBackwardIterator{old_head};
@@ -312,7 +310,7 @@ namespace redGrapes
 
                 std::shared_ptr<ItemControlBlock> expected(nullptr);
                 std::shared_ptr<ItemControlBlock> const& desired = new_head;
-                return std::atomic_compare_exchange_strong<ItemControlBlock>(&head, &expected, desired);
+                return std::atomic_compare_exchange_strong(&head, &expected, desired);
             }
         };
 

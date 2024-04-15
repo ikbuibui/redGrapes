@@ -1,4 +1,4 @@
-/* Copyright 2019 Michael Sippel
+/* Copyright 2019-2024 Michael Sippel, Tapish Narwal
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <redGrapes/memory/allocator.hpp>
+#include "redGrapes/memory/allocator.hpp"
 
 #include <fmt/format.h>
 
@@ -71,6 +71,6 @@ struct fmt::formatter<redGrapes::LabelProperty>
     template<typename FormatContext>
     auto format(redGrapes::LabelProperty const& label_prop, FormatContext& ctx)
     {
-        return format_to(ctx.out(), "\"label\" : \"{}\"", label_prop.label);
+        return fmt::format_to(ctx.out(), "\"label\" : \"{}\"", label_prop.label);
     }
 };

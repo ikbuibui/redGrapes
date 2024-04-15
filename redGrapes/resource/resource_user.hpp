@@ -1,4 +1,4 @@
-/* Copyright 2019 Michael Sippel
+/* Copyright 2019-2024 Michael Sippel, Tapish Narwal
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,56 +11,73 @@
 
 #pragma once
 
-#include <redGrapes/memory/allocator.hpp>
-#include <redGrapes/resource/resource.hpp>
-#include <redGrapes/util/chunked_list.hpp>
+#include "redGrapes/util/chunked_list.hpp"
 
 #include <fmt/format.h>
 
-#include <list>
+#include <initializer_list>
+#include <memory>
 
 namespace redGrapes
 {
+#ifndef REDGRAPES_RUL_CHUNKSIZE
+#    define REDGRAPES_RUL_CHUNKSIZE 128
+#endif
+
 
     unsigned scope_depth();
 
-    struct Task;
+    template<typename TTask>
     struct ResourceBase;
+
+    template<typename TTask>
     struct ResourceAccess;
 
+    template<typename TTask>
     struct ResourceUsageEntry
     {
-        std::shared_ptr<ResourceBase> resource;
-        typename ChunkedList<Task*, REDGRAPES_RUL_CHUNKSIZE>::MutBackwardIterator task_entry;
+        std::shared_ptr<ResourceBase<TTask>> resource;
+        typename ChunkedList<TTask*, REDGRAPES_RUL_CHUNKSIZE>::MutBackwardIterator task_entry;
 
-        bool operator==(ResourceUsageEntry const& other) const;
+        bool operator==(ResourceUsageEntry<TTask> const& other) const;
     };
 
-    class ResourceUser
+    template<typename TTask>
+    struct ResourceUser
     {
-    public:
         ResourceUser();
         ResourceUser(ResourceUser const& other);
-        ResourceUser(std::initializer_list<ResourceAccess> list);
+        ResourceUser(std::initializer_list<ResourceAccess<TTask>> list);
 
-        void add_resource_access(ResourceAccess ra);
-        void rm_resource_access(ResourceAccess ra);
+        void add_resource_access(ResourceAccess<TTask> ra);
+        void rm_resource_access(ResourceAccess<TTask> ra);
         void build_unique_resource_list();
-        bool has_sync_access(std::shared_ptr<ResourceBase> res);
+        bool has_sync_access(std::shared_ptr<ResourceBase<TTask>> const& res);
         bool is_superset_of(ResourceUser const& a) const;
-        static bool is_superset(ResourceUser const& a, ResourceUser const& b);
-        static bool is_serial(ResourceUser const& a, ResourceUser const& b);
+
+        friend bool is_serial(ResourceUser const& a, ResourceUser const& b)
+        {
+            TRACE_EVENT("ResourceUser", "is_serial");
+            for(auto ra = a.access_list.crbegin(); ra != a.access_list.crend(); ++ra)
+                for(auto rb = b.access_list.crbegin(); rb != b.access_list.crend(); ++rb)
+                {
+                    TRACE_EVENT("ResourceUser", "RA::is_serial");
+                    if(ResourceAccess<TTask>::is_serial(*ra, *rb))
+                        return true;
+                }
+            return false;
+        }
 
         uint8_t scope_level;
 
-        ChunkedList<ResourceAccess, 8> access_list;
-        ChunkedList<ResourceUsageEntry, 8> unique_resources;
-    }; // class ResourceUser
+        ChunkedList<ResourceAccess<TTask>, 8> access_list;
+        ChunkedList<ResourceUsageEntry<TTask>, 8> unique_resources;
+    }; // struct ResourceUser
 
 } // namespace redGrapes
 
-template<>
-struct fmt::formatter<redGrapes::ResourceUser>
+template<typename TTask>
+struct fmt::formatter<redGrapes::ResourceUser<TTask>>
 {
     constexpr auto parse(format_parse_context& ctx)
     {
@@ -68,7 +85,7 @@ struct fmt::formatter<redGrapes::ResourceUser>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::ResourceUser const& r, FormatContext& ctx)
+    auto format(redGrapes::ResourceUser<TTask> const& r, FormatContext& ctx)
     {
         auto out = ctx.out();
         out = fmt::format_to(out, "[");
@@ -84,3 +101,5 @@ struct fmt::formatter<redGrapes::ResourceUser>
         return out;
     }
 };
+
+#include "redGrapes/resource/resource_user.tpp"

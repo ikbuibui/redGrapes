@@ -72,6 +72,6 @@ struct fmt::formatter<redGrapes::access::AreaAccess>
     template<typename FormatContext>
     auto format(redGrapes::access::AreaAccess const& acc, FormatContext& ctx)
     {
-        return format_to(ctx.out(), "{{ \"area\" : {{ \"begin\" : {}, \"end\" : {} }} }}", acc[0], acc[1]);
+        return fmt::format_to(ctx.out(), "{{ \"area\" : {{ \"begin\" : {}, \"end\" : {} }} }}", acc[0], acc[1]);
     }
 };
