@@ -7,10 +7,12 @@
 
 #pragma once
 
+#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/dispatch/cuda/cuda_worker.hpp"
 #include "redGrapes/scheduler/thread_scheduler.hpp"
 
+#include <atomic>
 #include <cassert>
 
 namespace redGrapes
@@ -63,10 +65,27 @@ namespace redGrapes
                 ;
             }
 
-            cudaStream_t getCudaStream(unsigned idx) const
+            /**
+             * Only to be used if the user wants to manage streams directly
+             * The user must ensure that if this method is used, they must set the cuda_stream_index() property
+             */
+            cudaStream_t getCudaStreamIdx(unsigned idx) const
             {
                 assert(idx < num_streams);
                 return this->m_worker_thread->worker->streams[idx].cuda_stream;
+            }
+
+            /**
+             * Returns the cuda stream to the user to use in their cuda kernel
+             * Also sets the stream index on the task which calls this method
+             * requires current_task is not nullptr
+             */
+            cudaStream_t getCudaStream() const
+            {
+                static std::atomic_uint stream_idx = 0;
+                auto task_stream_idx = stream_idx.fetch_add(1) % num_streams;
+                TaskCtx<TTask>::current_task->m_cuda_stream_idx = task_stream_idx;
+                return this->m_worker_thread->worker->streams[task_stream_idx].cuda_stream;
             }
         };
     } // namespace scheduler
