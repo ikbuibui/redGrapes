@@ -38,7 +38,7 @@ namespace redGrapes
                 , lower_limit(lower_limit)
                 , upper_limit(upper_limit)
             {
-                spdlog::debug("bumpallochunk: lower={}, upper={}", lower_limit, upper_limit);
+                SPDLOG_DEBUG("bumpallochunk: lower={}, upper={}", lower_limit, upper_limit);
                 next_addr = upper_limit;
             }
 
@@ -49,7 +49,7 @@ namespace redGrapes
             {
 #ifndef NDEBUG
                 if(!empty())
-                    spdlog::warn("BumpAllocChunk: {} allocations remaining not deallocated.", count.load());
+                    SPDLOG_WARN("BumpAllocChunk: {} allocations remaining not deallocated.", count.load());
 #endif
             }
 

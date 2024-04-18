@@ -23,7 +23,7 @@ namespace redGrapes
             template<typename Builder>
             static void build(Builder& builder, T const& t)
             {
-                spdlog::warn(
+                SPDLOG_WARN(
                     "trait `redGrapes::BuildProperties` is not implemented for {}",
                     boost::core::demangle(typeid(T).name()));
             }

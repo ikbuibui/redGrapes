@@ -76,7 +76,7 @@ namespace redGrapes
             // TODO: implement this using post-event of root-task?
             //  - event already has in_edge count
             //  -> never have current_task = nullptr
-            // spdlog::info("kill task... {} remaining", count);
+            // SPDLOG_INFO("kill task... {} remaining", count);
             if(count == 0)
                 task_scheduler_p->wake_all(); // TODO think if this should call wake_all on all schedulers
         }

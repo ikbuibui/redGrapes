@@ -67,7 +67,7 @@ namespace redGrapes
                 else
                 {
                     int error = errno;
-                    spdlog::error("hwloc_alloc_membind failed: {}\n", strerror(error));
+                    SPDLOG_ERROR("hwloc_alloc_membind failed: {}\n", strerror(error));
                     return Block::null();
                 }
 

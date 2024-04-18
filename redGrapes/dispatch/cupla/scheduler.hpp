@@ -44,7 +44,7 @@ namespace redGrapes
 
                 CuplaStreamDispatcher(CuplaStreamDispatcher const& other)
                 {
-                    spdlog::warn("CuplaStreamDispatcher copy constructor called!");
+                    SPDLOG_WARN("CuplaStreamDispatcher copy constructor called!");
                 }
 
                 ~CuplaStreamDispatcher()

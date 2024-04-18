@@ -179,7 +179,7 @@ namespace redGrapes
                 if(k < bitfield_len)
                 {
                     unsigned int idx = j * bitfield_len + k;
-                    // spdlog::info("find worker: j = {}, k = {}, idx= {}", j , k, idx);
+                    // SPDLOG_INFO("find worker: j = {}, k = {}, idx= {}", j , k, idx);
 
                     if(std::optional<T> x = f(idx))
                         return x;

@@ -502,7 +502,7 @@ namespace redGrapes
 
         ChunkedList(Allocator&& alloc, ChunkedList const& other) : ChunkedList(std::move(alloc))
         {
-            spdlog::error("copy construct ChunkedList!!");
+            SPDLOG_ERROR("copy construct ChunkedList!!");
         }
 
         /* decrement item_count and in case all items of this chunk are deleted,

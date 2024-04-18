@@ -104,7 +104,7 @@ namespace redGrapes
                 }
                 else
                 {
-                    spdlog::error(
+                    SPDLOG_ERROR(
                         "ChunkedBumpAlloc: requested allocation of {} bytes exceeds chunk capacity of {} bytes",
                         alloc_size,
                         chunk_capacity);
@@ -146,7 +146,7 @@ namespace redGrapes
                 }
 
 #if REDGRAPES_ENABLE_BACKWARDCPP
-                spdlog::error("try to deallocate invalid pointer ({}). this={}", (void*) blk.ptr, (void*) this);
+                SPDLOG_ERROR("try to deallocate invalid pointer ({}). this={}", (void*) blk.ptr, (void*) this);
 
                 backward::StackTrace st;
                 st.load_here(32);

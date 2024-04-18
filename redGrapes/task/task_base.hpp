@@ -86,7 +86,7 @@ namespace redGrapes
             }
             else
             {
-                spdlog::error("called yield in task without stack switching!");
+                SPDLOG_ERROR("called yield in task without stack switching!");
             }
         }
 
