@@ -33,7 +33,7 @@ namespace redGrapes::dispatch::cuda
 
         CudaStreamWrapper(CudaStreamWrapper const& other)
         {
-            spdlog::warn("CudaStreamWrapper copy constructor called!");
+            SPDLOG_WARN("CudaStreamWrapper copy constructor called!");
         }
 
         ~CudaStreamWrapper()

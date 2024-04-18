@@ -80,7 +80,7 @@ namespace redGrapes::dispatch::thread
                 char* str;
                 int error = errno;
                 hwloc_bitmap_asprintf(&str, obj->cpuset);
-                spdlog::warn("Couldn't cpubind to cpuset {}: {}\n", str, strerror(error));
+                SPDLOG_WARN("Couldn't cpubind to cpuset {}: {}\n", str, strerror(error));
                 free(str);
             }
         }
@@ -96,7 +96,7 @@ namespace redGrapes::dispatch::thread
                 char* str;
                 int error = errno;
                 hwloc_bitmap_asprintf(&str, obj->cpuset);
-                spdlog::warn("Couldn't membind to cpuset {}: {}\n", str, strerror(error));
+                SPDLOG_WARN("Couldn't membind to cpuset {}: {}\n", str, strerror(error));
                 free(str);
             }
         }

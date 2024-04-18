@@ -163,7 +163,7 @@ namespace redGrapes
                 {
                     unsigned local_worker_id = worker.id - m_base_id;
 
-                    spdlog::debug("steal task for worker {}", local_worker_id);
+                    SPDLOG_DEBUG("steal task for worker {}", local_worker_id);
 
                     if(TTask* task = steal_ready_task(worker))
                     {

@@ -32,14 +32,14 @@ namespace redGrapes
             {
                 m_base_id = base_id;
                 if(num_workers > TaskFreeCtx::n_pus)
-                    spdlog::warn(
+                    SPDLOG_WARN(
                         "{} worker-threads requested, but only {} PUs available!",
                         num_workers,
                         TaskFreeCtx::n_pus);
 
                 workers.reserve(num_workers);
 
-                spdlog::debug("populate WorkerPool with {} workers", num_workers);
+                SPDLOG_DEBUG("populate WorkerPool with {} workers", num_workers);
                 for(size_t worker_id = base_id; worker_id < base_id + num_workers; ++worker_id)
                 {
                     unsigned pu_id = worker_id % TaskFreeCtx::n_pus;

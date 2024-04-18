@@ -50,7 +50,7 @@ namespace redGrapes
 
             TaskFreeCtx::n_pus = hwloc_get_nbobjs_by_type(TaskFreeCtx::hwloc_ctx.topology, HWLOC_OBJ_PU);
             if(TaskFreeCtx::n_workers > TaskFreeCtx::n_pus)
-                spdlog::warn(
+                SPDLOG_WARN(
                     "{} worker-threads requested, but only {} PUs available!",
                     TaskFreeCtx::n_workers,
                     TaskFreeCtx::n_pus);
