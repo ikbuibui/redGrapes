@@ -119,6 +119,7 @@ namespace redGrapes::dispatch::cuda
             auto event = task();
 
             cudaEvent_t cuda_event = event_pool.alloc();
+            // works even if the m_cuda_stream index optional is nullopt, because it gets casted to 0
             cudaEventRecord(cuda_event, streams[*(task->m_cuda_stream_idx)].cuda_stream);
             auto my_event = TaskCtx<TTask>::create_event();
             events.push(std::make_pair(cuda_event, *my_event));

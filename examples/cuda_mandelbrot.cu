@@ -77,7 +77,7 @@ int main()
 
     auto rg = redGrapes::init<redGrapes::dispatch::cuda::CudaTaskProperties>(
         redGrapes::SchedulerDescription(
-            std::make_shared<redGrapes::scheduler::CudaThreadScheduler<RGTask>>(),
+            std::make_shared<redGrapes::scheduler::CudaThreadScheduler<RGTask>>(2),
             CudaTag{}),
         redGrapes::SchedulerDescription(
             std::make_shared<redGrapes::scheduler::PoolScheduler<redGrapes::dispatch::thread::DefaultWorker<RGTask>>>(
@@ -128,48 +128,46 @@ int main()
          * calculate picture
          */
         rg.emplace_task<CudaTag>(
-              [width, height, area, i, mid_x, mid_y, w, &cudaSched](auto device_buffer)
-              {
-                  double begin_x = mid_x - w;
-                  double end_x = mid_x + w;
-                  double begin_y = mid_y - w;
-                  double end_y = mid_y + w;
+            [width, height, area, i, mid_x, mid_y, w, &cudaSched](auto device_buffer)
+            {
+                double begin_x = mid_x - w;
+                double end_x = mid_x + w;
+                double begin_y = mid_y - w;
+                double end_y = mid_y + w;
 
-                  dim3 threadsPerBlock(8, 8);
-                  dim3 numBlocks(width / threadsPerBlock.x, height / threadsPerBlock.y);
+                dim3 threadsPerBlock(8, 8);
+                dim3 numBlocks(width / threadsPerBlock.x, height / threadsPerBlock.y);
 
-                  auto current_stream = cudaSched.getCudaStream(0);
-                  mandelbrot<<<numBlocks, threadsPerBlock, 0, cudaSched.getCudaStream(0)>>>(
-                      begin_x,
-                      end_x,
-                      begin_y,
-                      end_y,
-                      width,
-                      height,
-                      *device_buffer);
-                  std::cout << "launched kernel to stream " << current_stream << std::endl;
-              },
-              device_buffer.write())
-            .cuda_stream_index(0u);
+                auto current_stream = cudaSched.getCudaStream();
+                mandelbrot<<<numBlocks, threadsPerBlock, 0, current_stream>>>(
+                    begin_x,
+                    end_x,
+                    begin_y,
+                    end_y,
+                    width,
+                    height,
+                    *device_buffer);
+                std::cout << "launched kernel to stream " << current_stream << std::endl;
+            },
+            device_buffer.write());
 
         /*
          * copy data
          */
         rg.emplace_task<CudaTag>(
-              [area, &cudaSched](auto host_buffer, auto device_buffer)
-              {
-                  auto current_stream = cudaSched.getCudaStream(0);
-                  cudaMemcpyAsync(
-                      *host_buffer,
-                      *device_buffer,
-                      area * sizeof(Color),
-                      cudaMemcpyDeviceToHost,
-                      current_stream);
-                  std::cout << "launched memcpy to stream " << current_stream << std::endl;
-              },
-              host_buffer.write(),
-              device_buffer.read())
-            .cuda_stream_index(0u);
+            [area, &cudaSched](auto host_buffer, auto device_buffer)
+            {
+                auto current_stream = cudaSched.getCudaStream();
+                cudaMemcpyAsync(
+                    *host_buffer,
+                    *device_buffer,
+                    area * sizeof(Color),
+                    cudaMemcpyDeviceToHost,
+                    current_stream);
+                std::cout << "launched memcpy to stream " << current_stream << std::endl;
+            },
+            host_buffer.write(),
+            device_buffer.read());
         ;
 
         /*
@@ -209,9 +207,7 @@ int main()
     /*
      * cleanup
      */
-    rg.emplace_task<CudaTag>([](auto host_buffer) { cudaFreeHost(*host_buffer); }, host_buffer.write())
-        .cuda_stream_index(0u);
+    rg.emplace_task<CudaTag>([](auto host_buffer) { cudaFreeHost(*host_buffer); }, host_buffer.write());
 
-    rg.emplace_task<CudaTag>([](auto device_buffer) { cudaFree(*device_buffer); }, device_buffer.write())
-        .cuda_stream_index(0u);
+    rg.emplace_task<CudaTag>([](auto device_buffer) { cudaFree(*device_buffer); }, device_buffer.write());
 }
