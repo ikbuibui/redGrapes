@@ -35,7 +35,7 @@ namespace redGrapes
             }
             else
             {
-                event->waker_id = event.task->scheduler_p->getNextWorkerID() + 1;
+                // event->waker_id = event.task->scheduler_p->getNextWorkerID() + 1;
                 while(!event->is_reached())
                     TaskFreeCtx::idle();
             }

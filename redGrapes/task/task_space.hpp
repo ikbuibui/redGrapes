@@ -80,8 +80,11 @@ namespace redGrapes
             // if(count == 0)
             //     task_scheduler_p->wake_all(); // TODO think if this should call wake_all on all schedulers
 
-            if(depth == 0)
+            // to wake after barrier the check tells us that the root space is empty
+            // if(TaskCtx<TTask>::root_space->empty()) cant be written because TaskCtx include root space
+            if(count == 0 && depth == 0)
             {
+                // TODO should i wake up workers also? that was the old behaviour
                 TaskFreeCtx::cv.notify();
             }
         }
