@@ -37,8 +37,6 @@ namespace redGrapes
             PoolScheduler(unsigned num_workers);
             PoolScheduler(std::shared_ptr<dispatch::thread::WorkerPool<Worker>> workerPool);
 
-            void idle();
-
             /* send the new task to a worker
              */
             void emplace_task(TTask& task);

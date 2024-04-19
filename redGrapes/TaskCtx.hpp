@@ -21,8 +21,11 @@ namespace redGrapes
     struct TaskCtx
     {
         //! pause the currently running task at least until event is reached
-        // else is supposed to be called when .get() is called on emplace task, which calls the future .get(), so there
-        // is no current task at that time, unless this is in a child task space. we can assert(event.task != 0);
+        // else is supposed to be called when .get()/.submit() is called on emplace task, which calls the future
+        // .get(),
+        // if there is no current task at that time (not in a child task space) in the root space,wake up the parser
+        // thread
+        // we can assert(event.task != 0);
         static void yield(scheduler::EventPtr<TTask> event)
         {
             if(current_task)

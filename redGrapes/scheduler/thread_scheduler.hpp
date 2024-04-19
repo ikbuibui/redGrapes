@@ -40,19 +40,6 @@ namespace redGrapes
             {
             }
 
-            void idle()
-            {
-                SPDLOG_TRACE("ThreadScheduler::idle()");
-
-                /* the main thread shall not do any busy waiting
-                 * and always sleep right away in order to
-                 * not block any worker threads (those however should
-                 * busy-wait to improve latency)
-                 */
-                cv.timeout = 0;
-                cv.wait();
-            }
-
             /* send the new task to a worker
              */
             void emplace_task(TTask& task)

@@ -65,7 +65,7 @@ namespace redGrapes
             unsigned count = task_count.fetch_sub(1) - 1;
 
             unsigned worker_id = task->worker_id;
-            auto task_scheduler_p = task->scheduler_p;
+            // auto task_scheduler_p = task->scheduler_p;
             task->~TTask(); // TODO check if this is really required
 
             // FIXME: len of the Block is not correct since FunTask object is bigger than sizeof(Task)
@@ -77,8 +77,13 @@ namespace redGrapes
             //  - event already has in_edge count
             //  -> never have current_task = nullptr
             // SPDLOG_INFO("kill task... {} remaining", count);
-            if(count == 0)
-                task_scheduler_p->wake_all(); // TODO think if this should call wake_all on all schedulers
+            // if(count == 0)
+            //     task_scheduler_p->wake_all(); // TODO think if this should call wake_all on all schedulers
+
+            if(depth == 0)
+            {
+                TaskFreeCtx::cv.notify();
+            }
         }
 
         bool empty() const

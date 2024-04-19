@@ -34,10 +34,6 @@ namespace redGrapes
                 return false;
             }
 
-            virtual void idle()
-            {
-            }
-
             //! add task to the set of to-initialize tasks
             virtual void emplace_task(TTask& task)
             {

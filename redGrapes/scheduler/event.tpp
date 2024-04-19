@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/scheduler/event.hpp"
 #include "redGrapes/util/trace.hpp"
 
@@ -145,6 +146,12 @@ namespace redGrapes
                     state);
 
             assert(old_state > 0);
+
+            // test for state == 0 is not strictly required as no one adds a follower to result set
+            if(this->tag == EventPtrTag::T_EVT_RES_SET && state == 0)
+            {
+                TaskFreeCtx::cv.notify();
+            }
 
             if(task)
             {
