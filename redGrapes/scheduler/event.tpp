@@ -137,53 +137,55 @@ namespace redGrapes
                 break;
             }
 
-            if(task)
-                SPDLOG_TRACE(
-                    "notify event {} ({}-event of task {}) ~~> state = {}",
-                    (void*) &get_event(),
-                    tag_string,
-                    task->task_id,
-                    state);
+            SPDLOG_TRACE(
+                "notify event {} ({}-event of task {}) ~~> state = {}",
+                (void*) &get_event(),
+                tag_string,
+                task->task_id,
+                state);
 
             assert(old_state > 0);
 
-            // test for state == 0 is not strictly required as no one adds a follower to result set
-            if(this->tag == EventPtrTag::T_EVT_RES_SET && state == 0 && get_event().waker_id == parserID)
+            if(state > 1)
             {
-                TaskFreeCtx::cv.notify();
+                return false;
             }
-
-            if(task)
-            {
-                // pre event ready
-                if(tag == scheduler::T_EVT_PRE && state == 1)
-                {
-                    if(!claimed)
-                        task->scheduler_p->activate_task(*task);
-                }
-
-                // post event reached:
-                // no other task can now create dependencies to this
-                // task after deleting it from the resource list
-                if(state == 0 && tag == scheduler::T_EVT_POST)
-                    task->delete_from_resources();
-            }
-            // TODO rework this to reduce if(task) checks
+            auto waker_id = get_event().waker_id;
             // if event is ready or reached (state ∈ {0,1})
-            if(state <= 1 && get_event().waker_id >= 0)
-                task->scheduler_p->wake(get_event().waker_id);
+            if(waker_id >= 0)
+                task->scheduler_p->wake(waker_id);
+
+            // pre event ready
+            if(tag == scheduler::T_EVT_PRE && state == 1)
+            {
+                if(!claimed)
+                    task->scheduler_p->activate_task(*task);
+            }
+
 
             if(state == 0)
             {
+                // post event reached:
+                // no other task can now create dependencies to this
+                // task after deleting it from the resource list
+                if(tag == scheduler::T_EVT_POST)
+                    task->delete_from_resources();
+
+                // test for state == 0 is not strictly required as no one adds a follower to result set
+                // TODO FIX! if .submit() is called inside a child task, we dont wake the parser
+                if(this->tag == EventPtrTag::T_EVT_RES_SET && waker_id == parserID)
+                {
+                    TaskFreeCtx::cv.notify();
+                }
+
                 get_event().notify_followers();
 
                 // the second one of either post-event or result-get-event shall destroy the task
-                if(task)
-                    if(tag == scheduler::T_EVT_POST || tag == scheduler::T_EVT_RES_GET)
-                    {
-                        if(task->removal_countdown.fetch_sub(1) == 1)
-                            task->space->free_task(task);
-                    }
+                if(tag == scheduler::T_EVT_POST || tag == scheduler::T_EVT_RES_GET)
+                {
+                    if(task->removal_countdown.fetch_sub(1) == 1)
+                        task->space->free_task(task);
+                }
             }
 
             // return true if event is ready (state == 1)
