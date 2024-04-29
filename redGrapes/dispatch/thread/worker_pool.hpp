@@ -105,7 +105,7 @@ namespace redGrapes
                         {
                             // we have a candidate of a busy worker,
                             // now check its queue
-                            if(TTask* t = get_worker_thread(idx).worker->emplacement_queue.pop())
+                            if(TTask* t = get_worker_thread(idx).worker.emplacement_queue.pop())
                                 return t;
 
                             // otherwise check own queue again
@@ -136,7 +136,7 @@ namespace redGrapes
                         {
                             // we have a candidate of a busy worker,
                             // now check its queue
-                            if(TTask* t = get_worker_thread(idx).worker->ready_queue.pop())
+                            if(TTask* t = get_worker_thread(idx).worker.ready_queue.pop())
                                 return t;
 
                             // otherwise check own queue again

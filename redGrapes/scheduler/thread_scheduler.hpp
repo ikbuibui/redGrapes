@@ -42,7 +42,7 @@ namespace redGrapes
             void emplace_task(TTask& task)
             {
                 // todo: properly store affinity information in task
-                m_worker_thread->worker->dispatch_task(task);
+                m_worker_thread->worker.dispatch_task(task);
             }
 
             /* send this already existing,
@@ -55,8 +55,8 @@ namespace redGrapes
                 TRACE_EVENT("Scheduler", "activate_task");
                 SPDLOG_TRACE("ThreadScheduler::activate_task({})", task.task_id);
 
-                m_worker_thread->worker->ready_queue.push(&task);
-                m_worker_thread->worker->wake();
+                m_worker_thread->worker.ready_queue.push(&task);
+                m_worker_thread->worker.wake();
             }
 
             /* Wakeup some worker or the main thread
@@ -69,7 +69,7 @@ namespace redGrapes
             {
                 // TODO remove this if else
                 if(id == 0)
-                    return m_worker_thread->worker->wake();
+                    return m_worker_thread->worker.wake();
                 else
                     return false;
             }
@@ -78,7 +78,7 @@ namespace redGrapes
              */
             void wake_all()
             {
-                m_worker_thread->worker->wake();
+                m_worker_thread->worker.wake();
             }
 
             unsigned getNextWorkerID()

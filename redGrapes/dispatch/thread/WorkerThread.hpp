@@ -23,12 +23,11 @@ namespace redGrapes::dispatch::thread
         hwloc_obj_t const obj; // storing this vs calculating this as
         // hwloc_obj_t obj
         //     = hwloc_get_obj_by_type(TaskFreeCtx::hwloc_ctx.topology, HWLOC_OBJ_PU, this->id % TaskFreeCtx::n_pus);
-        std::shared_ptr<Worker> worker;
+        Worker worker;
 
         template<typename... Args>
-        WorkerThread(hwloc_obj_t const obj, Args&&... args) : obj{obj}
+        WorkerThread(hwloc_obj_t const obj, Args&&... args) : obj{obj}, worker{std::forward<Args>(args)...}
         {
-            worker = std::make_shared<Worker>(std::forward<Args>(args)...);
         }
 
         ~WorkerThread()
@@ -42,7 +41,7 @@ namespace redGrapes::dispatch::thread
 
         void stop()
         {
-            worker->stop();
+            worker.stop();
             thread.join();
         }
 
@@ -57,11 +56,11 @@ namespace redGrapes::dispatch::thread
 
             /* initialize thread-local variables
              */
-            *TaskFreeCtx::current_worker_id = worker->id;
+            *TaskFreeCtx::current_worker_id = worker.id;
 
             /* execute tasks until stop()
              */
-            worker->work_loop();
+            worker.work_loop();
 
             TaskFreeCtx::current_worker_id = std::nullopt;
 
