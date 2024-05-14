@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <redGrapes/util/trace.hpp>
+#include "redGrapes/util/trace.hpp"
 
 #if REDGRAPES_ENABLE_TRACE
 

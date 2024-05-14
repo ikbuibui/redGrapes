@@ -65,11 +65,9 @@ namespace redGrapes
             unsigned count = task_count.fetch_sub(1) - 1;
 
             unsigned worker_id = task->worker_id;
-            auto task_scheduler_p = task->scheduler_p;
             task->~TTask(); // TODO check if this is really required
 
             // FIXME: len of the Block is not correct since FunTask object is bigger than sizeof(Task)
-            // TODO check if arenaID is correct for the global alloc pool
             TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id).deallocate(
                 memory::Block{(uintptr_t) task, sizeof(TTask)});
 
@@ -77,8 +75,14 @@ namespace redGrapes
             //  - event already has in_edge count
             //  -> never have current_task = nullptr
             // SPDLOG_INFO("kill task... {} remaining", count);
-            if(count == 0)
-                task_scheduler_p->wake_all(); // TODO think if this should call wake_all on all schedulers
+
+            // to wake after barrier the check tells us that the root space is empty
+            // if(TaskCtx<TTask>::root_space->empty()) cant be written because TaskCtx include root space
+            if(count == 0 && depth == 0)
+            {
+                // TODO should i wake up workers also? that was the old behaviour
+                TaskFreeCtx::cv.notify();
+            }
         }
 
         bool empty() const

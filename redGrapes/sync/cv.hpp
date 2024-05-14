@@ -52,7 +52,7 @@ namespace redGrapes
             {
                 if(++count > timeout)
                 {
-                    // TODO: check this opmitization
+                    // TODO: check this opmitization with a member std::atomic_flag busy
                     // busy.clear(std::memory_order_release);
 
                     if(should_wait.load(std::memory_order_acquire))

@@ -11,7 +11,6 @@
 #include "redGrapes/dispatch/thread/WorkerThread.hpp"
 #include "redGrapes/memory/allocator.hpp"
 #include "redGrapes/scheduler/scheduler.hpp"
-#include "redGrapes/sync/cv.hpp"
 
 #include <memory>
 
@@ -26,7 +25,6 @@ namespace redGrapes
             using TTask = Worker::task_type;
 
             WorkerId m_base_id;
-            CondVar cv;
             std::shared_ptr<dispatch::thread::WorkerThread<Worker>> m_worker_thread;
             static constexpr unsigned n_workers = 1;
 
@@ -37,19 +35,6 @@ namespace redGrapes
             ThreadScheduler(std::shared_ptr<dispatch::thread::WorkerThread<Worker>> workerThread)
                 : m_worker_thread(workerThread)
             {
-            }
-
-            void idle()
-            {
-                SPDLOG_TRACE("ThreadScheduler::idle()");
-
-                /* the main thread shall not do any busy waiting
-                 * and always sleep right away in order to
-                 * not block any worker threads (those however should
-                 * busy-wait to improve latency)
-                 */
-                cv.timeout = 0;
-                cv.wait();
             }
 
             /* send the new task to a worker
@@ -76,26 +61,23 @@ namespace redGrapes
 
             /* Wakeup some worker or the main thread
              *
-             * WakerId = 0 for main thread
-             * WakerId = WorkerId + 1
+             * WorkerId = WorkerId
              *
              * @return true if thread was indeed asleep
              */
             bool wake(WakerId id = 0)
             {
+                // TODO remove this if else
                 if(id == 0)
-                    return cv.notify();
-                else if(id > 0 && id <= 1)
                     return m_worker_thread->worker->wake();
                 else
                     return false;
             }
 
-            /* wakeup all wakers (workers + main thread)
+            /* wakeup all workers
              */
             void wake_all()
             {
-                cv.notify();
                 m_worker_thread->worker->wake();
             }
 

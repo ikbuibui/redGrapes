@@ -9,6 +9,7 @@
 
 #include "redGrapes/memory/chunked_bump_alloc.hpp"
 #include "redGrapes/memory/hwloc_alloc.hpp"
+#include "redGrapes/sync/cv.hpp"
 
 #include <functional>
 #include <memory>
@@ -39,8 +40,19 @@ namespace redGrapes
         static inline unsigned n_pus;
         static inline HwlocContext hwloc_ctx;
         static inline std::shared_ptr<WorkerAllocPool> worker_alloc_pool;
+        static inline CondVar cv{0};
 
-        static inline thread_local std::function<void()> idle = [] {};
+        static inline std::function<void()> idle = []
+        {
+            SPDLOG_TRACE("Parser::idle()");
+
+            /* the main thread shall not do any busy waiting
+             * and always sleep right away in order to
+             * not block any worker threads (those however should
+             * busy-wait to improve latency)
+             */
+            cv.wait();
+        };
         static inline thread_local std::optional<WorkerId> current_worker_id;
     };
 } // namespace redGrapes
