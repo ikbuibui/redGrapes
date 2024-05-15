@@ -13,8 +13,6 @@
 
 #include <redGrapes/TaskFreeCtx.hpp>
 
-#include <pthread.h>
-
 namespace redGrapes
 {
     namespace scheduler

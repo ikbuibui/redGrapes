@@ -9,10 +9,9 @@
 
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/dispatch/thread/WorkerThread.hpp"
+#include "redGrapes/memory/allocator.hpp"
 #include "redGrapes/scheduler/scheduler.hpp"
 #include "redGrapes/sync/cv.hpp"
-
-#include <pthread.h>
 
 #include <memory>
 
