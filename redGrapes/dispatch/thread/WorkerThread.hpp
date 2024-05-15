@@ -8,8 +8,6 @@
 #pragma once
 
 #include "redGrapes/TaskFreeCtx.hpp"
-#include "redGrapes/dispatch/thread/DefaultWorker.hpp"
-#include "redGrapes/memory/chunked_bump_alloc.hpp"
 #include "redGrapes/memory/hwloc_alloc.hpp"
 
 #include <memory>

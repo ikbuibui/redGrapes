@@ -2,8 +2,6 @@
 #pragma once
 
 #include <atomic>
-#include <memory>
-#include <mutex>
 
 namespace redGrapes
 {
