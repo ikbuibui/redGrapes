@@ -12,8 +12,6 @@
 #include "redGrapes/scheduler/scheduler.hpp"
 #include "redGrapes/sync/cv.hpp"
 
-#include <pthread.h>
-
 #include <memory>
 
 namespace redGrapes
