@@ -64,8 +64,6 @@ namespace redGrapes
                 {
                 }
 
-                ~DefaultWorker();
-
                 inline bool wake()
                 {
                     return cv.notify();

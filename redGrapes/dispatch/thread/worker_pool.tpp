@@ -60,11 +60,6 @@ namespace redGrapes
             }
 
             template<typename Worker>
-            WorkerPool<Worker>::~WorkerPool()
-            {
-            }
-
-            template<typename Worker>
             void WorkerPool<Worker>::start()
             {
                 for(auto& worker : workers)

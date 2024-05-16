@@ -24,11 +24,6 @@ namespace redGrapes
         {
 
             template<typename TTask>
-            DefaultWorker<TTask>::~DefaultWorker()
-            {
-            }
-
-            template<typename TTask>
             void DefaultWorker<TTask>::stop()
             {
                 SPDLOG_TRACE("Worker::stop()");

@@ -53,10 +53,6 @@ namespace redGrapes
             {
             }
 
-            ~ChunkedBumpAlloc()
-            {
-            }
-
             static inline size_t roundup_to_poweroftwo(size_t s)
             {
                 s--;

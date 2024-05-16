@@ -33,13 +33,13 @@ namespace redGrapes
             {
             }
 
-            BumpAllocator(uintptr_t lower_limit, uintptr_t upper_limit)
-                : count(0)
-                , lower_limit(lower_limit)
-                , upper_limit(upper_limit)
+            BumpAllocator(uintptr_t _lower_limit, uintptr_t _upper_limit)
+                : next_addr{_upper_limit}
+                , count(0)
+                , lower_limit(_lower_limit)
+                , upper_limit(_upper_limit)
             {
                 SPDLOG_DEBUG("bumpallochunk: lower={}, upper={}", lower_limit, upper_limit);
-                next_addr = upper_limit;
             }
 
             BumpAllocator(BumpAllocator const&) = delete;
