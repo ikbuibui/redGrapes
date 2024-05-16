@@ -21,6 +21,13 @@ namespace redGrapes
 
     using WorkerId = unsigned;
 
+    /** WorkerID of parser to wake it up
+     * ID 0,1,2... are used for worker threads
+     * ID -1 is used as the default value for WorkerId, indicating uninitialized/no workers
+     * Using the magic number -2 for the parser thread
+     */
+    constexpr WorkerId parserID = -2;
+
     // seperated to not templatize allocators with Task type
     struct WorkerAllocPool
     {

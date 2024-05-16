@@ -148,7 +148,7 @@ namespace redGrapes
             assert(old_state > 0);
 
             // test for state == 0 is not strictly required as no one adds a follower to result set
-            if(this->tag == EventPtrTag::T_EVT_RES_SET && state == 0 && get_event().waker_id == -2)
+            if(this->tag == EventPtrTag::T_EVT_RES_SET && state == 0 && get_event().waker_id == parserID)
             {
                 TaskFreeCtx::cv.notify();
             }

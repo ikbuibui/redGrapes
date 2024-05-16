@@ -35,7 +35,7 @@ namespace redGrapes
             }
             else
             {
-                event->waker_id = -2;
+                event->waker_id = parserID;
                 while(!event->is_reached())
                     TaskFreeCtx::idle();
             }
