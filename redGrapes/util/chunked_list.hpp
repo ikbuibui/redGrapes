@@ -254,7 +254,7 @@ namespace redGrapes
 
             ~Chunk()
             {
-                for(Item* item = first_item; item < (this->first_item + T_chunk_size); item++)
+                for(Item* item = first_item; item < (this->next_item); item++)
                     item->~Item();
             }
 
