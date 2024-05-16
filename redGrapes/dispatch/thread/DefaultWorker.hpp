@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "redGrapes/scheduler/scheduler.hpp"
 #include "redGrapes/sync/cv.hpp"
 #include "redGrapes/task/queue.hpp"
 #include "redGrapes/util/bitfield.hpp"
@@ -66,11 +65,6 @@ namespace redGrapes
                 }
 
                 ~DefaultWorker();
-
-                inline scheduler::WakerId get_waker_id()
-                {
-                    return id + 1;
-                }
 
                 inline bool wake()
                 {

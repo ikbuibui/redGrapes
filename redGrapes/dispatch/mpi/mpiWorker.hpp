@@ -49,11 +49,6 @@ namespace redGrapes
                 {
                 }
 
-                inline scheduler::WakerId get_waker_id()
-                {
-                    return id + 1;
-                }
-
                 inline bool wake()
                 {
                     return cv.notify();
@@ -89,7 +84,7 @@ namespace redGrapes
 
                     if(event)
                     {
-                        event->get_event().waker_id = get_waker_id();
+                        event->get_event().waker_id = id;
                         task.sg_pause(*event);
 
                         task.pre_event.up();
@@ -173,7 +168,7 @@ namespace redGrapes
                     SPDLOG_TRACE("Worker {} start work_loop()", this->id);
                     while(!this->m_stop.load(std::memory_order_consume))
                     {
-                        // this->cv.wait(); // TODO fix this by fixing event_ptr notify to wake
+                        // this->cv.wait(); // TODO fix this by only waiting if requestPool is empty
 
                         while(TTask* task = this->gather_task())
                         {

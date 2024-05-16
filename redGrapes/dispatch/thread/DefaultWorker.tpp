@@ -69,7 +69,7 @@ namespace redGrapes
 
                 if(event)
                 {
-                    event->get_event().waker_id = get_waker_id();
+                    event->get_event().waker_id = id;
                     task.sg_pause(*event);
 
                     task.pre_event.up();

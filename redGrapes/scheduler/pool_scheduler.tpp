@@ -31,29 +31,15 @@ namespace redGrapes
         {
         }
 
-        template<typename Worker>
-        void PoolScheduler<Worker>::idle()
-        {
-            SPDLOG_TRACE("PoolScheduler::idle()");
-
-            /* the main thread shall not do any busy waiting
-             * and always sleep right away in order to
-             * not block any worker threads (those however should
-             * busy-wait to improve latency)
-             */
-            cv.timeout = 0;
-            cv.wait();
-        }
-
         /* send the new task to a worker
          */
         template<typename Worker>
         void PoolScheduler<Worker>::emplace_task(TTask& task)
         {
             // TODO: properly store affinity information in task
-            WorkerId worker_id = task.worker_id - m_base_id;
+            WorkerId local_worker_id = task.worker_id - m_base_id;
 
-            m_worker_pool->get_worker_thread(worker_id).worker->dispatch_task(task);
+            m_worker_pool->get_worker_thread(local_worker_id).worker->dispatch_task(task);
 
             /* hack as of 2023/11/17
              *
@@ -74,7 +60,7 @@ namespace redGrapes
                     return idx;
                 },
                 dispatch::thread::WorkerState::AVAILABLE,
-                worker_id,
+                local_worker_id,
                 true);
 #endif
         }
@@ -108,8 +94,7 @@ namespace redGrapes
 
         /* Wakeup some worker or the main thread
          *
-         * WakerId = 0 for main thread
-         * WakerId = WorkerId + 1
+         * WakerId = WorkerId
          *
          * @return true if thread was indeed asleep
          */
@@ -117,21 +102,18 @@ namespace redGrapes
         bool PoolScheduler<Worker>::wake(WakerId id)
         {
             auto local_waker_id = id - m_base_id;
-            if(local_waker_id == 0)
-                return cv.notify();
             // TODO analyse and optimize
-            else if(local_waker_id > 0 && local_waker_id <= n_workers)
-                return m_worker_pool->get_worker_thread(local_waker_id - 1).worker->wake();
+            if(local_waker_id > 0 && local_waker_id <= n_workers)
+                return m_worker_pool->get_worker_thread(local_waker_id).worker->wake();
             else
                 return false;
         }
 
-        /* wakeup all wakers (workers + main thread)
+        /* wakeup all workers
          */
         template<typename Worker>
         void PoolScheduler<Worker>::wake_all()
         {
-            wake(0);
             for(uint16_t i = m_base_id; i < m_base_id + n_workers; ++i)
                 wake(i);
         }

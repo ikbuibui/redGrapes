@@ -7,11 +7,9 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/dispatch/thread/worker_pool.hpp"
 #include "redGrapes/scheduler/scheduler.hpp"
-#include "redGrapes/sync/cv.hpp"
-
-#include <redGrapes/TaskFreeCtx.hpp>
 
 namespace redGrapes
 {
@@ -27,15 +25,12 @@ namespace redGrapes
         {
             using TTask = Worker::task_type;
             WorkerId m_base_id;
-            CondVar cv;
             WorkerId local_next_worker_id = 0;
             unsigned n_workers;
             std::shared_ptr<dispatch::thread::WorkerPool<Worker>> m_worker_pool;
 
             PoolScheduler(unsigned num_workers);
             PoolScheduler(std::shared_ptr<dispatch::thread::WorkerPool<Worker>> workerPool);
-
-            void idle();
 
             /* send the new task to a worker
              */
@@ -49,14 +44,13 @@ namespace redGrapes
 
             /* Wakeup some worker or the main thread
              *
-             * WakerId = 0 for main thread
-             * WakerId = WorkerId + 1
+             * WakerId = WorkerId
              *
              * @return true if thread was indeed asleep
              */
             bool wake(WakerId id = 0);
 
-            /* wakeup all wakers (workers + main thread)
+            /* wakeup all workers
              */
             void wake_all();
 
