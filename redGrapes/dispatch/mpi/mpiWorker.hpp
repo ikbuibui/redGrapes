@@ -42,7 +42,7 @@ namespace redGrapes
 
                 MPIWorker(WorkerId worker_id) : id(worker_id)
                 {
-                    requestPool = std::make_shared<RequestPool<TTask>>();
+                    requestPool = memory::alloc_shared_bind<RequestPool<TTask>>(id);
                 }
 
                 ~MPIWorker()

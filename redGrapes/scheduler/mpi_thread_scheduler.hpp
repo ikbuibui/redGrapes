@@ -24,7 +24,7 @@ namespace redGrapes
             // if worker is  MPI worker
             std::shared_ptr<dispatch::mpi::RequestPool<TTask>> getRequestPool()
             {
-                return this->m_worker_thread->worker->requestPool;
+                return this->m_worker_thread->worker.requestPool;
             }
         };
 

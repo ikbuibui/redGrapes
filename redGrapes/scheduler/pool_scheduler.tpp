@@ -39,7 +39,7 @@ namespace redGrapes
             // TODO: properly store affinity information in task
             WorkerId local_worker_id = task.worker_id - m_base_id;
 
-            m_worker_pool->get_worker_thread(local_worker_id).worker->dispatch_task(task);
+            m_worker_pool->get_worker_thread(local_worker_id).worker.dispatch_task(task);
 
             /* hack as of 2023/11/17
              *
@@ -56,7 +56,7 @@ namespace redGrapes
             auto id = m_worker_pool->probe_worker_by_state<unsigned>(
                 [&m_worker_pool](unsigned idx)
                 {
-                    m_worker_pool->get_worker_thread(idx).worker->wake();
+                    m_worker_pool->get_worker_thread(idx).worker.wake();
                     return idx;
                 },
                 dispatch::thread::WorkerState::AVAILABLE,
@@ -87,9 +87,9 @@ namespace redGrapes
                     worker_id = next_worker.fetch_add(1) % n_workers;
             }
 
-            m_worker_pool->get_worker_thread(worker_id).worker->ready_queue.push(&task);
+            m_worker_pool->get_worker_thread(worker_id).worker.ready_queue.push(&task);
             m_worker_pool->set_worker_state(worker_id, dispatch::thread::WorkerState::BUSY);
-            m_worker_pool->get_worker_thread(worker_id).worker->wake();
+            m_worker_pool->get_worker_thread(worker_id).worker.wake();
         }
 
         /* Wakeup some worker or the main thread
@@ -104,7 +104,7 @@ namespace redGrapes
             auto local_waker_id = id - m_base_id;
             // TODO analyse and optimize
             if(local_waker_id > 0 && local_waker_id <= n_workers)
-                return m_worker_pool->get_worker_thread(local_waker_id).worker->wake();
+                return m_worker_pool->get_worker_thread(local_waker_id).worker.wake();
             else
                 return false;
         }

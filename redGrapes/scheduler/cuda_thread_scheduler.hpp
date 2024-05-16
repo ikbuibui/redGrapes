@@ -72,7 +72,7 @@ namespace redGrapes
             cudaStream_t getCudaStreamIdx(unsigned idx) const
             {
                 assert(idx < num_streams);
-                return this->m_worker_thread->worker->streams[idx].cuda_stream;
+                return this->m_worker_thread->worker.streams[idx].cuda_stream;
             }
 
             /**
@@ -85,7 +85,7 @@ namespace redGrapes
                 static std::atomic_uint stream_idx = 0;
                 auto task_stream_idx = stream_idx.fetch_add(1) % num_streams;
                 TaskCtx<TTask>::current_task->m_cuda_stream_idx = task_stream_idx;
-                return this->m_worker_thread->worker->streams[task_stream_idx].cuda_stream;
+                return this->m_worker_thread->worker.streams[task_stream_idx].cuda_stream;
             }
         };
     } // namespace scheduler
