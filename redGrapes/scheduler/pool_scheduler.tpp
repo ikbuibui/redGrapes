@@ -88,7 +88,9 @@ namespace redGrapes
             }
 
             m_worker_pool->get_worker_thread(worker_id).worker.ready_queue.push(&task);
-            m_worker_pool->set_worker_state(worker_id, dispatch::thread::WorkerState::BUSY);
+            // Seems excessive since once the worker executes gather_task, it will set itself to busy
+            // m_worker_pool->set_worker_state(worker_id, dispatch::thread::WorkerState::BUSY);
+            // Maybe only wake if the worker was available
             m_worker_pool->get_worker_thread(worker_id).worker.wake();
         }
 
