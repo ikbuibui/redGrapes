@@ -22,6 +22,7 @@ set(EXAMPLE_NAMES
     5_access_demotion
     6_resource_scope
     7_event
+    8_child_destruction
     game_of_life
 )
 

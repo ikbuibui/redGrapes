@@ -70,13 +70,6 @@ namespace redGrapes
                 }
             }
         }
-
-        // add dependency to parent
-        if(auto parent = this->space->parent)
-        {
-            SPDLOG_TRACE("add event dep to parent");
-            this->post_event.add_follower(parent->get_post_event());
-        }
     }
 
     template<typename TTask>
@@ -97,10 +90,6 @@ namespace redGrapes
     template<typename TTask>
     void GraphProperty<TTask>::add_dependency(TTask& preceding_task)
     {
-        // precedence graph
-        // in_edges.push_back(&preceding_task);
-
-        // scheduling graph
         auto preceding_event = task->scheduler_p->task_dependency_type(preceding_task, *task)
                                    ? preceding_task->get_pre_event()
                                    : preceding_task->get_post_event();
@@ -114,7 +103,6 @@ namespace redGrapes
     {
         // std::unique_lock< SpinLock > lock( post_event.followers_mutex );
 
-        //    for( auto follower : post_event.followers )
         for(auto it = post_event.followers.rbegin(); it != post_event.followers.rend(); ++it)
         {
             scheduler::EventPtr<TTask> follower = *it;
