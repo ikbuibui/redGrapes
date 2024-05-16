@@ -70,7 +70,7 @@ namespace redGrapes
             unsigned count = task_count.fetch_sub(1) - 1;
 
             unsigned worker_id = task->worker_id;
-            task->~TTask(); // TODO check if this is really required
+            task->~TTask();
 
             // FIXME: len of the Block is not correct since FunTask object is bigger than sizeof(Task)
             TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id).deallocate(
@@ -85,6 +85,7 @@ namespace redGrapes
             // if(TaskCtx<TTask>::root_space->empty()) cant be written because TaskCtx include root space
             if(count == 0 && depth == 0)
             {
+                SPDLOG_TRACE("Wake up parser due to free task and no more tasks");
                 // TODO should i wake up workers also? that was the old behaviour
                 TaskFreeCtx::cv.notify();
             }

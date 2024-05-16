@@ -8,6 +8,7 @@
 #pragma once
 
 #include "redGrapes/memory/block.hpp"
+#include "redGrapes/util/demangled_name.hpp"
 #include "redGrapes/util/trace.hpp"
 
 #include <fmt/format.h>
@@ -106,6 +107,7 @@ namespace redGrapes
 
                 StaticAlloc(Allocator alloc, size_t n_bytes) : alloc(alloc), ptr((T*) alloc.allocate(n_bytes))
                 {
+                    SPDLOG_TRACE(" object: {} , bytes : {}", util::type_name<Item>(), n_bytes);
                 }
 
                 template<typename U>

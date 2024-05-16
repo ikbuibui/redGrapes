@@ -145,7 +145,7 @@ namespace redGrapes
         {
             WorkerId worker_id = scheduler_map[TSchedTag{}]->getNextWorkerID();
 
-            SPDLOG_TRACE("emplace task to worker {} next_worker={}", worker_id, TaskFreeCtx::next_worker);
+            SPDLOG_TRACE("emplace task to worker {}", worker_id);
 
             using Impl = typename std::invoke_result_t<BindArgs<Callable, Args...>, Callable, Args...>;
             // this is not set to nullptr. But it goes out of scope. Memory is managed by allocate
@@ -153,6 +153,7 @@ namespace redGrapes
             memory::Allocator alloc(worker_id);
             memory::Block blk = alloc.allocate(sizeof(FunTask<Impl, RGTask>));
             task = (FunTask<Impl, RGTask>*) blk.ptr;
+            SPDLOG_TRACE("Allocated Task of size {}", sizeof(FunTask<Impl, RGTask>));
 
             if(!task)
                 throw std::bad_alloc();

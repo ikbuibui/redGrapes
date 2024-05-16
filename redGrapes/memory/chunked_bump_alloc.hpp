@@ -115,7 +115,7 @@ namespace redGrapes
             void deallocate(Block blk)
             {
                 TRACE_EVENT("Allocator", "ChunkedBumpAlloc::deallocate()");
-                SPDLOG_TRACE("ChunkedBumpAlloc[{}]: free {} ", (void*) this, (uintptr_t) blk.ptr);
+                SPDLOG_TRACE("ChunkedBumpAlloc[{}]: free {} {} ", (void*) this, (uintptr_t) blk.ptr, blk.len);
 
                 /* find the chunk that contains `ptr` and deallocate there.
                  * Additionally, delete the chunk if possible.
