@@ -36,6 +36,9 @@ build/
 .idea/
 /venv/
 
+# Clang tidy
+.clang-tidy
+
 # python byte code
 *.pyc
 

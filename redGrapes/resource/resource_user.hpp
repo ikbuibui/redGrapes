@@ -24,9 +24,6 @@ namespace redGrapes
 #    define REDGRAPES_RUL_CHUNKSIZE 128
 #endif
 
-
-    unsigned scope_depth();
-
     template<typename TTask>
     struct ResourceBase;
 

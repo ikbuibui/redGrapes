@@ -23,21 +23,18 @@ namespace redGrapes
     struct TaskSpace : std::enable_shared_from_this<TaskSpace<TTask>>
     {
         std::atomic<unsigned long> task_count;
-
         unsigned depth;
         TTask* parent;
 
         // top space
-        TaskSpace() : depth(0), parent(nullptr)
+        TaskSpace() : task_count(0), depth(0), parent(nullptr)
         {
-            task_count = 0;
         }
 
         // sub space
 
-        TaskSpace(TTask* parent) : depth(parent->space->depth + 1), parent(parent)
+        TaskSpace(TTask* parent) : task_count(0), depth(parent->space->depth + 1), parent(parent)
         {
-            task_count = 0;
         }
 
         // add a new task to the task-space
