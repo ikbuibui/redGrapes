@@ -40,9 +40,10 @@ namespace redGrapes
                 task::Queue<TTask> emplacement_queue{queue_capacity};
                 task::Queue<TTask> ready_queue{queue_capacity};
 
-                MPIWorker(WorkerId worker_id) : id(worker_id)
+                MPIWorker(WorkerId worker_id)
+                    : requestPool{memory::alloc_shared_bind<RequestPool<TTask>>(worker_id)}
+                    , id(worker_id)
                 {
-                    requestPool = memory::alloc_shared_bind<RequestPool<TTask>>(id);
                 }
 
                 ~MPIWorker()
