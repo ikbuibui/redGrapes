@@ -36,7 +36,6 @@ namespace redGrapes
                 using TTask = task_type;
 
                 WorkerPool(size_t n_workers);
-                ~WorkerPool();
 
                 void emplace_workers(WorkerId base_id);
 

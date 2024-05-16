@@ -46,10 +46,6 @@ namespace redGrapes
                 {
                 }
 
-                ~MPIWorker()
-                {
-                }
-
                 inline bool wake()
                 {
                     return cv.notify();
