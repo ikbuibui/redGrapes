@@ -25,7 +25,6 @@ namespace redGrapes
         {
             using TTask = Worker::task_type;
             WorkerId m_base_id;
-            WorkerId local_next_worker_id = 0;
             unsigned n_workers;
             std::shared_ptr<dispatch::thread::WorkerPool<Worker>> m_worker_pool;
 

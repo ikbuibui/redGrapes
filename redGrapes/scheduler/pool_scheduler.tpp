@@ -121,10 +121,8 @@ namespace redGrapes
         template<typename Worker>
         unsigned PoolScheduler<Worker>::getNextWorkerID()
         {
-            // TODO make atomic
-            auto id = local_next_worker_id + m_base_id;
-            local_next_worker_id = (local_next_worker_id + 1) % n_workers;
-            return id;
+            static std::atomic<WorkerId> local_next_worker_counter = 0;
+            return (local_next_worker_counter++ % n_workers) + m_base_id;
         }
 
         template<typename Worker>
