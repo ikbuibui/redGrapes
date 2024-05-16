@@ -50,7 +50,12 @@ namespace redGrapes
             ++task_count;
 
             if(parent)
+            {
                 assert(parent->is_superset_of(*task));
+                // add dependency to parent
+                SPDLOG_TRACE("add event dep to parent");
+                task->post_event.add_follower(parent->get_post_event());
+            }
 
             for(auto r = task->unique_resources.rbegin(); r != task->unique_resources.rend(); ++r)
             {
