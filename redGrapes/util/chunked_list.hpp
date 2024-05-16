@@ -13,6 +13,7 @@
 
 #include "redGrapes/memory/allocator.hpp"
 #include "redGrapes/util/atomic_list.hpp"
+#include "redGrapes/util/demangled_name.hpp"
 #include "redGrapes/util/trace.hpp"
 
 #include <spdlog/spdlog.h>
@@ -496,6 +497,7 @@ namespace redGrapes
     public:
         ChunkedList(Allocator&& alloc) : chunks(std::move(alloc), T_chunk_size * sizeof(Item) + sizeof(Chunk))
         {
+            SPDLOG_TRACE("Chunked List - object: {} , size : {}", util::type_name<T>(), sizeof(Item));
         }
 
         ChunkedList(ChunkedList&& other) = default;
