@@ -48,7 +48,6 @@ namespace redGrapes
             TaskFreeCtx::n_workers
                 = std::apply([](auto... args) { return (args.scheduler->n_workers + ...); }, execDescTuple);
 
-            TaskFreeCtx::n_pus = hwloc_get_nbobjs_by_type(TaskFreeCtx::hwloc_ctx.topology, HWLOC_OBJ_PU);
             if(TaskFreeCtx::n_workers > TaskFreeCtx::n_pus)
                 SPDLOG_WARN(
                     "{} worker-threads requested, but only {} PUs available!",
