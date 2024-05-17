@@ -26,10 +26,10 @@ namespace redGrapes
             using TTask = Worker::task_type;
             WorkerId m_base_id;
             unsigned n_workers;
-            std::shared_ptr<dispatch::thread::WorkerPool<Worker>> m_worker_pool;
+            dispatch::thread::WorkerPool<Worker> m_worker_pool;
 
             PoolScheduler(unsigned num_workers);
-            PoolScheduler(std::shared_ptr<dispatch::thread::WorkerPool<Worker>> workerPool);
+            PoolScheduler(dispatch::thread::WorkerPool<Worker> workerPool);
 
             /* send the new task to a worker
              */
