@@ -54,8 +54,7 @@ namespace redGrapes
                     TaskFreeCtx::n_workers,
                     TaskFreeCtx::n_pus);
 
-            TaskFreeCtx::worker_alloc_pool = std::make_shared<WorkerAllocPool>();
-            TaskFreeCtx::worker_alloc_pool->allocs.reserve(TaskFreeCtx::n_workers);
+            TaskFreeCtx::worker_alloc_pool.allocs.reserve(TaskFreeCtx::n_workers);
 
             TaskCtx<RGTask>::root_space = std::make_shared<TaskSpace<RGTask>>();
 

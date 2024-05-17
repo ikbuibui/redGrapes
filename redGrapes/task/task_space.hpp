@@ -70,7 +70,7 @@ namespace redGrapes
             task->~TTask();
 
             // FIXME: len of the Block is not correct since FunTask object is bigger than sizeof(Task)
-            TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id).deallocate(
+            TaskFreeCtx::worker_alloc_pool.get_alloc(worker_id).deallocate(
                 memory::Block{(uintptr_t) task, sizeof(TTask)});
 
             // TODO: implement this using post-event of root-task?

@@ -34,12 +34,12 @@ namespace redGrapes
 
             Block allocate(size_t n_bytes)
             {
-                return TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id).allocate(n_bytes);
+                return TaskFreeCtx::worker_alloc_pool.get_alloc(worker_id).allocate(n_bytes);
             }
 
             void deallocate(Block blk)
             {
-                TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id).deallocate(blk);
+                TaskFreeCtx::worker_alloc_pool.get_alloc(worker_id).deallocate(blk);
             }
         };
 

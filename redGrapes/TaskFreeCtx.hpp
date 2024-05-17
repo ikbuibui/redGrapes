@@ -46,7 +46,7 @@ namespace redGrapes
         static inline HwlocContext hwloc_ctx;
         static inline uint8_t n_pus{static_cast<uint8_t>(hwloc_get_nbobjs_by_type(hwloc_ctx.topology, HWLOC_OBJ_PU))};
         static inline unsigned n_workers;
-        static inline std::shared_ptr<WorkerAllocPool> worker_alloc_pool;
+        static inline WorkerAllocPool worker_alloc_pool;
         static inline CondVar cv{0};
 
         static inline std::function<void()> idle = []
