@@ -74,18 +74,19 @@ namespace redGrapes
         {
             //! worker id to use in case all workers are busy
             // TODO analyse and optimize
-            static thread_local std::atomic<unsigned int> next_worker(
-                TaskFreeCtx::current_worker_id ? *TaskFreeCtx::current_worker_id + 1 - m_base_id : 0);
-            TRACE_EVENT("Scheduler", "activate_task");
-            SPDLOG_TRACE("PoolScheduler::activate_task({})", task.task_id);
+            // static thread_local std::atomic<unsigned int> next_worker(
+            //     TaskFreeCtx::current_worker_id ? *TaskFreeCtx::current_worker_id + 1 - m_base_id : 0);
+            // TRACE_EVENT("Scheduler", "activate_task");
+            // SPDLOG_TRACE("PoolScheduler::activate_task({})", task.task_id);
 
-            int worker_id = m_worker_pool->find_free_worker();
-            if(worker_id < 0)
-            {
-                worker_id = next_worker.fetch_add(1) % n_workers;
-                if(worker_id == *TaskFreeCtx::current_worker_id)
-                    worker_id = next_worker.fetch_add(1) % n_workers;
-            }
+            // int worker_id = m_worker_pool->find_free_worker();
+            // if(worker_id < 0)
+            // {
+            //     worker_id = next_worker.fetch_add(1) % n_workers;
+            //     if(worker_id == *TaskFreeCtx::current_worker_id)
+            //         worker_id = next_worker.fetch_add(1) % n_workers;
+            // }
+            int worker_id = TaskFreeCtx::current_worker_id ? *TaskFreeCtx::current_worker_id - m_base_id : 0;
 
             m_worker_pool->get_worker_thread(worker_id).worker.ready_queue.push(&task);
             // Seems excessive since once the worker executes gather_task, it will set itself to busy

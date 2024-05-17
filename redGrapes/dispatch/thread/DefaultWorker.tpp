@@ -37,12 +37,12 @@ namespace redGrapes
                 SPDLOG_TRACE("Worker {} start work_loop()", id);
                 while(!m_stop.load(std::memory_order_consume))
                 {
-                    worker_state_p->set(id, dispatch::thread::WorkerState::AVAILABLE);
+                    // worker_state_p->set(id, dispatch::thread::WorkerState::AVAILABLE);
                     cv.wait();
 
                     while(TTask* task = this->gather_task())
                     {
-                        worker_state_p->set(id, dispatch::thread::WorkerState::BUSY);
+                        // worker_state_p->set(id, dispatch::thread::WorkerState::BUSY);
                         execute_task(*task);
                     }
                 }
@@ -101,12 +101,12 @@ namespace redGrapes
                     if(task)
                         return task;
 
-                /* set worker state to signal that we are requesting tasks
-                 */
-                worker_state_p->set(id, dispatch::thread::WorkerState::AVAILABLE);
+                        /* set worker state to signal that we are requesting tasks
+                         */
+                        // worker_state_p->set(id, dispatch::thread::WorkerState::AVAILABLE);
 
 #ifndef ENABLE_WORKSTEALING
-#    define ENABLE_WORKSTEALING 1
+#    define ENABLE_WORKSTEALING 0
 #endif
 
 #if ENABLE_WORKSTEALING
