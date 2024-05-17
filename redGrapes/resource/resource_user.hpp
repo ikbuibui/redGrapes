@@ -65,10 +65,9 @@ namespace redGrapes
             return false;
         }
 
-        uint8_t scope_level;
-
         ChunkedList<ResourceAccess<TTask>, 8> access_list;
         ChunkedList<ResourceUsageEntry<TTask>, 8> unique_resources;
+        uint8_t scope_level;
     }; // struct ResourceUser
 
 } // namespace redGrapes

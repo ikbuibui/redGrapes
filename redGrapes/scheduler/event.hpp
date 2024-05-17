@@ -40,9 +40,9 @@ namespace redGrapes
         template<typename TTask>
         struct EventPtr
         {
-            enum EventPtrTag tag;
-            TTask* task;
             std::shared_ptr<Event<TTask>> external_event;
+            TTask* task;
+            enum EventPtrTag tag = T_UNINITIALIZED;
 
             inline bool operator==(EventPtr<TTask> const& other) const
             {
@@ -84,16 +84,16 @@ namespace redGrapes
         template<typename TTask>
         struct Event
         {
+            //! the set of subsequent events
+            ChunkedList<EventPtr<TTask>, REDGRAPES_EVENT_FOLLOWER_LIST_CHUNKSIZE> followers;
+
             /*! number of incoming edges
              * state == 0: event is reached and can be removed
              */
-            std::atomic_uint16_t state;
-
+            std::atomic<uint16_t> state;
             //! waker that is waiting for this event
             WakerId waker_id;
 
-            //! the set of subsequent events
-            ChunkedList<EventPtr<TTask>, REDGRAPES_EVENT_FOLLOWER_LIST_CHUNKSIZE> followers;
 
             Event();
             Event(Event&);

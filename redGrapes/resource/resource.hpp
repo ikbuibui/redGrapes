@@ -48,19 +48,18 @@ namespace redGrapes
         }
 
     public:
-        unsigned int id;
-        unsigned int scope_level;
-
-        SpinLock users_mutex;
         ChunkedList<TTask*, REDGRAPES_RUL_CHUNKSIZE> users;
+        SpinLock users_mutex;
+        uint16_t id;
+        uint8_t scope_level;
 
         /**
          * Create a new resource with an unused ID.
          */
         ResourceBase()
-            : id(generateID())
+            : users(memory::Allocator(get_arena_id()))
+            , id(generateID())
             , scope_level(TaskCtx<TTask>::scope_depth())
-            , users(memory::Allocator(get_arena_id()))
         {
         }
 
@@ -267,7 +266,7 @@ namespace redGrapes
 
             Access(Access&& other)
                 : ResourceAccess<TTask>::AccessBase(
-                    std::move(std::forward<ResourceAccess<TTask>::AccessBase>(other))) // TODO check this
+                      std::move(std::forward<ResourceAccess<TTask>::AccessBase>(other))) // TODO check this
                 , policy(std::move(other.policy))
             {
             }
