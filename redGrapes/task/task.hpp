@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/task/property/graph.hpp"
 #include "redGrapes/task/property/id.hpp"
 #include "redGrapes/task/property/inherit.hpp"
@@ -47,8 +48,9 @@ namespace redGrapes
         std::atomic<uint8_t> removal_countdown;
         scheduler::IScheduler<Task<UserTaskProperties...>>* scheduler_p;
 
-        Task(scheduler::IScheduler<Task<UserTaskProperties...>>& scheduler)
-            : removal_countdown(2)
+        Task(WorkerId worker_id, scheduler::IScheduler<Task<UserTaskProperties...>>& scheduler)
+            : worker_id(worker_id)
+            , removal_countdown(2)
             , scheduler_p(&scheduler)
         {
         }
@@ -67,7 +69,7 @@ namespace redGrapes
     {
         Result result_data;
 
-        ResultTask(scheduler::IScheduler<TTask>& scheduler) : TTask(scheduler)
+        ResultTask(WorkerId worker_id, scheduler::IScheduler<TTask>& scheduler) : TTask(worker_id, scheduler)
         {
         }
 
@@ -92,7 +94,7 @@ namespace redGrapes
     template<typename TTask>
     struct ResultTask<void, TTask> : TTask
     {
-        ResultTask(scheduler::IScheduler<TTask>& scheduler) : TTask(scheduler)
+        ResultTask(WorkerId worker_id, scheduler::IScheduler<TTask>& scheduler) : TTask(worker_id, scheduler)
         {
         }
 
@@ -114,8 +116,8 @@ namespace redGrapes
     template<typename F, typename TTask>
     struct FunTask : ResultTask<typename std::invoke_result_t<F>, TTask>
     {
-        FunTask(scheduler::IScheduler<TTask>& scheduler)
-            : ResultTask<typename std::invoke_result_t<F>, TTask>(scheduler)
+        FunTask(WorkerId worker_id, scheduler::IScheduler<TTask>& scheduler)
+            : ResultTask<typename std::invoke_result_t<F>, TTask>(worker_id, scheduler)
         {
         }
 

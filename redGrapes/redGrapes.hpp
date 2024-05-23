@@ -157,9 +157,7 @@ namespace redGrapes
                 throw std::bad_alloc();
 
             // construct task in-place
-            new(task) FunTask<Impl, RGTask>(*scheduler_map[TSchedTag{}]);
-
-            task->worker_id = worker_id;
+            new(task) FunTask<Impl, RGTask>(worker_id, *scheduler_map[TSchedTag{}]);
 
             return std::move(TaskBuilder<RGTask, Callable, Args...>(task, std::move(f), std::forward<Args>(args)...));
         }
