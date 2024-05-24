@@ -41,9 +41,9 @@ namespace redGrapes
     class ResourceBase
     {
     protected:
-        static unsigned int generateID()
+        static uint16_t generateID()
         {
-            static std::atomic<unsigned int> id_counter;
+            static std::atomic<uint16_t> id_counter;
             return id_counter.fetch_add(1);
         }
 
@@ -63,7 +63,7 @@ namespace redGrapes
         {
         }
 
-        unsigned get_arena_id() const
+        WorkerId get_arena_id() const
         {
             return id % TaskFreeCtx::n_workers;
         }
@@ -321,10 +321,10 @@ namespace redGrapes
     public:
         Resource()
         {
-            static unsigned i = 0;
+            static WorkerId i = 0;
 
-            WorkerId worker_id = i++ % TaskFreeCtx::n_workers;
-            base = redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(worker_id);
+            i = i++ % TaskFreeCtx::n_workers;
+            base = redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(i);
         }
 
         /**

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
+
 #include <spdlog/spdlog.h>
 
 namespace redGrapes
@@ -53,7 +55,7 @@ namespace redGrapes
                 return false;
             }
 
-            virtual unsigned getNextWorkerID()
+            virtual WorkerId getNextWorkerID()
             {
                 return 0;
             }

@@ -11,15 +11,15 @@
 #include "redGrapes/memory/hwloc_alloc.hpp"
 #include "redGrapes/sync/cv.hpp"
 
+#include <cstdint>
 #include <functional>
-#include <memory>
 #include <optional>
 #include <vector>
 
 namespace redGrapes
 {
 
-    using WorkerId = unsigned;
+    using WorkerId = uint8_t;
 
     /** WorkerID of parser to wake it up
      * ID 0,1,2... are used for worker threads
@@ -44,8 +44,9 @@ namespace redGrapes
     struct TaskFreeCtx
     {
         static inline HwlocContext hwloc_ctx;
-        static inline uint8_t n_pus{static_cast<uint8_t>(hwloc_get_nbobjs_by_type(hwloc_ctx.topology, HWLOC_OBJ_PU))};
-        static inline unsigned n_workers;
+        static inline WorkerId n_pus{
+            static_cast<WorkerId>(hwloc_get_nbobjs_by_type(hwloc_ctx.topology, HWLOC_OBJ_PU))};
+        static inline WorkerId n_workers;
         static inline WorkerAllocPool worker_alloc_pool;
         static inline CondVar cv{0};
 

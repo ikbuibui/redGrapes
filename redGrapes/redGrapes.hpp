@@ -63,7 +63,7 @@ namespace redGrapes
                 scheduler->init(base_worker_id);
                 base_worker_id = base_worker_id + scheduler->n_workers;
             };
-            unsigned base_worker_id = 0;
+            WorkerId base_worker_id = 0;
             std::apply(
                 [&base_worker_id, initAdd](auto... args) { ((initAdd(args.scheduler, base_worker_id)), ...); },
                 execDescTuple);

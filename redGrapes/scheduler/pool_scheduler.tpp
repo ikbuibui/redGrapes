@@ -19,7 +19,7 @@ namespace redGrapes
     namespace scheduler
     {
         template<typename Worker>
-        PoolScheduler<Worker>::PoolScheduler(unsigned num_workers) : n_workers(num_workers)
+        PoolScheduler<Worker>::PoolScheduler(WorkerId num_workers) : n_workers(num_workers)
                                                                    , m_worker_pool(num_workers)
         {
         }
@@ -52,8 +52,8 @@ namespace redGrapes
 #endif
 
 #if REDGRAPES_EMPLACE_NOTIFY_NEXT
-            auto id = m_worker_pool.probe_worker_by_state<unsigned>(
-                [&m_worker_pool](unsigned idx)
+            auto id = m_worker_pool.probe_worker_by_state<WorkerId>(
+                [&m_worker_pool](WorkerId idx)
                 {
                     m_worker_pool.get_worker_thread(idx).worker.wake();
                     return idx;
@@ -73,7 +73,7 @@ namespace redGrapes
         {
             //! worker id to use in case all workers are busy
             // TODO analyse and optimize
-            static thread_local std::atomic<unsigned int> next_worker(
+            static thread_local std::atomic<WorkerId> next_worker(
                 TaskFreeCtx::current_worker_id ? *TaskFreeCtx::current_worker_id + 1 - m_base_id : 0);
             TRACE_EVENT("Scheduler", "activate_task");
             SPDLOG_TRACE("PoolScheduler::activate_task({})", task.task_id);
@@ -113,12 +113,12 @@ namespace redGrapes
         template<typename Worker>
         void PoolScheduler<Worker>::wake_all()
         {
-            for(uint16_t i = m_base_id; i < m_base_id + n_workers; ++i)
+            for(WorkerId i = m_base_id; i < m_base_id + n_workers; ++i)
                 wake(i);
         }
 
         template<typename Worker>
-        unsigned PoolScheduler<Worker>::getNextWorkerID()
+        WorkerId PoolScheduler<Worker>::getNextWorkerID()
         {
             static std::atomic<WorkerId> local_next_worker_counter = 0;
             return (local_next_worker_counter++ % n_workers) + m_base_id;

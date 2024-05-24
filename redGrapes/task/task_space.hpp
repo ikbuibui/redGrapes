@@ -66,7 +66,7 @@ namespace redGrapes
             TRACE_EVENT("TaskSpace", "free_task()");
             unsigned count = task_count.fetch_sub(1) - 1;
 
-            unsigned worker_id = task->worker_id;
+            WorkerId worker_id = task->worker_id;
             task->~TTask();
 
             // FIXME: len of the Block is not correct since FunTask object is bigger than sizeof(Task)

@@ -36,7 +36,7 @@ namespace redGrapes
                 // TODO check if it was already initalized
                 if(!this->m_worker_thread)
                 {
-                    unsigned pu_id = base_id % TaskFreeCtx::n_pus;
+                    WorkerId pu_id = base_id % TaskFreeCtx::n_pus;
                     // allocate worker with id `i` on arena `i`,
                     hwloc_obj_t obj = hwloc_get_obj_by_type(TaskFreeCtx::hwloc_ctx.topology, HWLOC_OBJ_PU, pu_id);
                     TaskFreeCtx::worker_alloc_pool.allocs.emplace_back(

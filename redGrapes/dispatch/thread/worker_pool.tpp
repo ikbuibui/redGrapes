@@ -42,7 +42,7 @@ namespace redGrapes
                 SPDLOG_DEBUG("populate WorkerPool with {} workers", num_workers);
                 for(size_t worker_id = base_id; worker_id < base_id + num_workers; ++worker_id)
                 {
-                    unsigned pu_id = worker_id % TaskFreeCtx::n_pus;
+                    WorkerId pu_id = worker_id % TaskFreeCtx::n_pus;
                     // allocate worker with id `i` on arena `i`,
                     hwloc_obj_t obj = hwloc_get_obj_by_type(TaskFreeCtx::hwloc_ctx.topology, HWLOC_OBJ_PU, pu_id);
                     TaskFreeCtx::worker_alloc_pool.allocs.emplace_back(
@@ -82,12 +82,12 @@ namespace redGrapes
 
                 SPDLOG_TRACE("find worker...");
 
-                unsigned start_idx = 0;
+                WorkerId start_idx = 0;
                 if(TaskFreeCtx::current_worker_id)
                     start_idx = *TaskFreeCtx::current_worker_id - m_base_id;
 
-                std::optional<unsigned> idx = this->probe_worker_by_state<unsigned>(
-                    [this](unsigned idx) -> std::optional<unsigned>
+                std::optional<WorkerId> idx = this->probe_worker_by_state<WorkerId>(
+                    [this](WorkerId idx) -> std::optional<WorkerId>
                     {
                         if(set_worker_state(idx, WorkerState::BUSY))
                             return idx;

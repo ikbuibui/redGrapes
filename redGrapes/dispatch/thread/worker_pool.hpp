@@ -76,7 +76,7 @@ namespace redGrapes
                 inline std::optional<T> probe_worker_by_state(
                     F&& f,
                     bool expected_worker_state,
-                    unsigned start_worker_idx,
+                    WorkerId start_worker_idx,
                     bool exclude_start = true)
                 {
                     return worker_state.template probe_by_value<T, F>(
@@ -100,7 +100,7 @@ namespace redGrapes
                 TTask* steal_new_task(Worker& worker)
                 {
                     std::optional<TTask*> task = probe_worker_by_state<TTask*>(
-                        [&worker, this](unsigned idx) -> std::optional<TTask*>
+                        [&worker, this](WorkerId idx) -> std::optional<TTask*>
                         {
                             // we have a candidate of a busy worker,
                             // now check its queue
@@ -131,7 +131,7 @@ namespace redGrapes
                 TTask* steal_ready_task(Worker& worker)
                 {
                     std::optional<TTask*> task = probe_worker_by_state<TTask*>(
-                        [&worker, this](unsigned idx) -> std::optional<TTask*>
+                        [&worker, this](WorkerId idx) -> std::optional<TTask*>
                         {
                             // we have a candidate of a busy worker,
                             // now check its queue
@@ -160,7 +160,7 @@ namespace redGrapes
                 // @return task if a new task was found, nullptr otherwise
                 TTask* steal_task(Worker& worker)
                 {
-                    unsigned local_worker_id = worker.id - m_base_id;
+                    WorkerId local_worker_id = worker.id - m_base_id;
 
                     SPDLOG_DEBUG("steal task for worker {}", local_worker_id);
 
@@ -189,7 +189,7 @@ namespace redGrapes
             private:
                 std::vector<std::shared_ptr<dispatch::thread::WorkerThread<Worker>>> workers;
                 AtomicBitfield worker_state;
-                unsigned int num_workers;
+                WorkerId num_workers;
                 WorkerId m_base_id;
             };
 
