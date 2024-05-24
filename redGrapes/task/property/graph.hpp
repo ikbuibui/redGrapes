@@ -54,9 +54,6 @@ namespace redGrapes
 
         TTask* task;
 
-        //! number of parents
-        uint8_t scope_depth;
-
         //! task space that contains this task, must not be null
         std::shared_ptr<TaskSpace<TTask>> space;
 
