@@ -12,6 +12,7 @@
 #include "redGrapes/task/property/resource.hpp"
 #include "redGrapes/task/task_base.hpp"
 
+#include <cstdint>
 #include <type_traits>
 
 namespace redGrapes
@@ -29,15 +30,15 @@ namespace redGrapes
     struct Task
         : TaskBase<Task<UserTaskProperties...>>
         , TaskProperties1<
-              IDProperty,
-              ResourceProperty<Task<UserTaskProperties...>>,
               GraphProperty<Task<UserTaskProperties...>>,
+              ResourceProperty<Task<UserTaskProperties...>>,
+              IDProperty,
               UserTaskProperties...>
     {
         using TaskProperties = TaskProperties1<
-            IDProperty,
-            ResourceProperty<Task<UserTaskProperties...>>,
             GraphProperty<Task<UserTaskProperties...>>,
+            ResourceProperty<Task<UserTaskProperties...>>,
+            IDProperty,
             UserTaskProperties...>;
 
         virtual ~Task()
@@ -45,8 +46,8 @@ namespace redGrapes
         }
 
         // worker id where task is first emplaced and task memory is located (may be stolen later)
-        unsigned worker_id;
-        std::atomic_int removal_countdown;
+        WorkerId worker_id;
+        std::atomic<uint8_t> removal_countdown;
         scheduler::IScheduler<Task<UserTaskProperties...>>* scheduler_p;
 
         Task(scheduler::IScheduler<Task<UserTaskProperties...>>& scheduler)

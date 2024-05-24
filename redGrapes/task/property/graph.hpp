@@ -54,9 +54,6 @@ namespace redGrapes
 
         TTask* task;
 
-        //! number of parents
-        uint8_t scope_depth;
-
         //! task space that contains this task, must not be null
         std::shared_ptr<TaskSpace<TTask>> space;
 
@@ -77,22 +74,22 @@ namespace redGrapes
 
         inline scheduler::EventPtr<TTask> get_pre_event()
         {
-            return scheduler::EventPtr<TTask>{scheduler::T_EVT_PRE, this->task};
+            return scheduler::EventPtr<TTask>{nullptr, this->task, scheduler::T_EVT_PRE};
         }
 
         inline scheduler::EventPtr<TTask> get_post_event()
         {
-            return scheduler::EventPtr<TTask>{scheduler::T_EVT_POST, this->task};
+            return scheduler::EventPtr<TTask>{nullptr, this->task, scheduler::T_EVT_POST};
         }
 
         inline scheduler::EventPtr<TTask> get_result_set_event()
         {
-            return scheduler::EventPtr<TTask>{scheduler::T_EVT_RES_SET, this->task};
+            return scheduler::EventPtr<TTask>{nullptr, this->task, scheduler::T_EVT_RES_SET};
         }
 
         inline scheduler::EventPtr<TTask> get_result_get_event()
         {
-            return scheduler::EventPtr<TTask>{scheduler::T_EVT_RES_GET, this->task};
+            return scheduler::EventPtr<TTask>{nullptr, this->task, scheduler::T_EVT_RES_GET};
         }
 
         inline bool is_ready()
@@ -178,7 +175,7 @@ namespace redGrapes
             };
         };
 
-        void apply_patch(Patch const&){};
+        void apply_patch(Patch const&) {};
     };
 
 } // namespace redGrapes

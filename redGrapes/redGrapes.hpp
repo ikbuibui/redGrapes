@@ -48,15 +48,13 @@ namespace redGrapes
             TaskFreeCtx::n_workers
                 = std::apply([](auto... args) { return (args.scheduler->n_workers + ...); }, execDescTuple);
 
-            TaskFreeCtx::n_pus = hwloc_get_nbobjs_by_type(TaskFreeCtx::hwloc_ctx.topology, HWLOC_OBJ_PU);
             if(TaskFreeCtx::n_workers > TaskFreeCtx::n_pus)
                 SPDLOG_WARN(
                     "{} worker-threads requested, but only {} PUs available!",
                     TaskFreeCtx::n_workers,
                     TaskFreeCtx::n_pus);
 
-            TaskFreeCtx::worker_alloc_pool = std::make_shared<WorkerAllocPool>();
-            TaskFreeCtx::worker_alloc_pool->allocs.reserve(TaskFreeCtx::n_workers);
+            TaskFreeCtx::worker_alloc_pool.allocs.reserve(TaskFreeCtx::n_workers);
 
             TaskCtx<RGTask>::root_space = std::make_shared<TaskSpace<RGTask>>();
 
@@ -65,7 +63,7 @@ namespace redGrapes
                 scheduler->init(base_worker_id);
                 base_worker_id = base_worker_id + scheduler->n_workers;
             };
-            unsigned base_worker_id = 0;
+            WorkerId base_worker_id = 0;
             std::apply(
                 [&base_worker_id, initAdd](auto... args) { ((initAdd(args.scheduler, base_worker_id)), ...); },
                 execDescTuple);

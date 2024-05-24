@@ -34,6 +34,8 @@
 namespace redGrapes
 {
 
+    using ResourceID = uint16_t;
+
     template<typename TTask, typename AccessPolicy>
     class Resource;
 
@@ -41,30 +43,29 @@ namespace redGrapes
     class ResourceBase
     {
     protected:
-        static unsigned int generateID()
+        static ResourceID generateID()
         {
-            static std::atomic<unsigned int> id_counter;
+            static std::atomic<ResourceID> id_counter;
             return id_counter.fetch_add(1);
         }
 
     public:
-        unsigned int id;
-        unsigned int scope_level;
-
-        SpinLock users_mutex;
         ChunkedList<TTask*, REDGRAPES_RUL_CHUNKSIZE> users;
+        SpinLock users_mutex;
+        ResourceID id;
+        uint8_t scope_level;
 
         /**
          * Create a new resource with an unused ID.
          */
         ResourceBase()
-            : id(generateID())
+            : users(memory::Allocator(get_arena_id()))
+            , id(generateID())
             , scope_level(TaskCtx<TTask>::scope_depth())
-            , users(memory::Allocator(get_arena_id()))
         {
         }
 
-        unsigned get_arena_id() const
+        WorkerId get_arena_id() const
         {
             return id % TaskFreeCtx::n_workers;
         }
@@ -158,7 +159,7 @@ namespace redGrapes
             return this->obj->resource->scope_level;
         }
 
-        unsigned int resource_id() const
+        ResourceID resource_id() const
         {
             return this->obj->resource->id;
         }
@@ -267,7 +268,7 @@ namespace redGrapes
 
             Access(Access&& other)
                 : ResourceAccess<TTask>::AccessBase(
-                    std::move(std::forward<ResourceAccess<TTask>::AccessBase>(other))) // TODO check this
+                      std::move(std::forward<ResourceAccess<TTask>::AccessBase>(other))) // TODO check this
                 , policy(std::move(other.policy))
             {
             }
@@ -322,10 +323,10 @@ namespace redGrapes
     public:
         Resource()
         {
-            static unsigned i = 0;
+            static ResourceID i = 0;
 
-            WorkerId worker_id = i++ % TaskFreeCtx::n_workers;
-            base = redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(worker_id);
+            i = i++ % TaskFreeCtx::n_workers;
+            base = redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(i);
         }
 
         /**

@@ -19,14 +19,13 @@ namespace redGrapes
     namespace scheduler
     {
         template<typename Worker>
-        PoolScheduler<Worker>::PoolScheduler(unsigned num_workers)
-            : n_workers(num_workers)
-            , m_worker_pool(std::make_shared<dispatch::thread::WorkerPool<Worker>>(num_workers))
+        PoolScheduler<Worker>::PoolScheduler(WorkerId num_workers) : n_workers(num_workers)
+                                                                   , m_worker_pool(num_workers)
         {
         }
 
         template<typename Worker>
-        PoolScheduler<Worker>::PoolScheduler(std::shared_ptr<dispatch::thread::WorkerPool<Worker>> workerPool)
+        PoolScheduler<Worker>::PoolScheduler(dispatch::thread::WorkerPool<Worker> workerPool)
             : m_worker_pool(workerPool)
         {
         }
@@ -39,7 +38,7 @@ namespace redGrapes
             // TODO: properly store affinity information in task
             WorkerId local_worker_id = task.worker_id - m_base_id;
 
-            m_worker_pool->get_worker_thread(local_worker_id).worker.dispatch_task(task);
+            m_worker_pool.get_worker_thread(local_worker_id).worker.dispatch_task(task);
 
             /* hack as of 2023/11/17
              *
@@ -53,10 +52,10 @@ namespace redGrapes
 #endif
 
 #if REDGRAPES_EMPLACE_NOTIFY_NEXT
-            auto id = m_worker_pool->probe_worker_by_state<unsigned>(
-                [&m_worker_pool](unsigned idx)
+            auto id = m_worker_pool.probe_worker_by_state<WorkerId>(
+                [&m_worker_pool](WorkerId idx)
                 {
-                    m_worker_pool->get_worker_thread(idx).worker.wake();
+                    m_worker_pool.get_worker_thread(idx).worker.wake();
                     return idx;
                 },
                 dispatch::thread::WorkerState::AVAILABLE,
@@ -74,12 +73,12 @@ namespace redGrapes
         {
             //! worker id to use in case all workers are busy
             // TODO analyse and optimize
-            static thread_local std::atomic<unsigned int> next_worker(
+            static thread_local std::atomic<WorkerId> next_worker(
                 TaskFreeCtx::current_worker_id ? *TaskFreeCtx::current_worker_id + 1 - m_base_id : 0);
             TRACE_EVENT("Scheduler", "activate_task");
             SPDLOG_TRACE("PoolScheduler::activate_task({})", task.task_id);
 
-            int worker_id = m_worker_pool->find_free_worker();
+            int worker_id = m_worker_pool.find_free_worker();
             if(worker_id < 0)
             {
                 worker_id = next_worker.fetch_add(1) % n_workers;
@@ -87,9 +86,9 @@ namespace redGrapes
                     worker_id = next_worker.fetch_add(1) % n_workers;
             }
 
-            m_worker_pool->get_worker_thread(worker_id).worker.ready_queue.push(&task);
-            m_worker_pool->set_worker_state(worker_id, dispatch::thread::WorkerState::BUSY);
-            m_worker_pool->get_worker_thread(worker_id).worker.wake();
+            m_worker_pool.get_worker_thread(worker_id).worker.ready_queue.push(&task);
+            m_worker_pool.set_worker_state(worker_id, dispatch::thread::WorkerState::BUSY);
+            m_worker_pool.get_worker_thread(worker_id).worker.wake();
         }
 
         /* Wakeup some worker or the main thread
@@ -104,7 +103,7 @@ namespace redGrapes
             auto local_waker_id = id - m_base_id;
             // TODO analyse and optimize
             if(local_waker_id > 0 && local_waker_id <= n_workers)
-                return m_worker_pool->get_worker_thread(local_waker_id).worker.wake();
+                return m_worker_pool.get_worker_thread(local_waker_id).worker.wake();
             else
                 return false;
         }
@@ -114,12 +113,12 @@ namespace redGrapes
         template<typename Worker>
         void PoolScheduler<Worker>::wake_all()
         {
-            for(uint16_t i = m_base_id; i < m_base_id + n_workers; ++i)
+            for(WorkerId i = m_base_id; i < m_base_id + n_workers; ++i)
                 wake(i);
         }
 
         template<typename Worker>
-        unsigned PoolScheduler<Worker>::getNextWorkerID()
+        WorkerId PoolScheduler<Worker>::getNextWorkerID()
         {
             static std::atomic<WorkerId> local_next_worker_counter = 0;
             return (local_next_worker_counter++ % n_workers) + m_base_id;
@@ -130,21 +129,21 @@ namespace redGrapes
         {
             // TODO check if it was already initalized
             m_base_id = base_id;
-            m_worker_pool->emplace_workers(m_base_id);
+            m_worker_pool.emplace_workers(m_base_id);
         }
 
         template<typename Worker>
         void PoolScheduler<Worker>::startExecution()
         {
             // TODO check if it was already started
-            m_worker_pool->start();
+            m_worker_pool.start();
         }
 
         template<typename Worker>
         void PoolScheduler<Worker>::stopExecution()
         {
             // TODO check if it was already stopped
-            m_worker_pool->stop();
+            m_worker_pool.stop();
         }
 
 

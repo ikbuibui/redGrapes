@@ -22,7 +22,7 @@ namespace redGrapes
     {
         auto event = memory::alloc_shared<scheduler::Event<TTask>>();
         event->add_follower(get_post_event());
-        return scheduler::EventPtr<TTask>{scheduler::T_EVT_EXT, task, event};
+        return scheduler::EventPtr<TTask>{event, task, scheduler::T_EVT_EXT};
     }
 
     /*!

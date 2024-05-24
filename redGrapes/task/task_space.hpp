@@ -9,6 +9,7 @@
 
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/memory/block.hpp"
+#include "redGrapes/task/property/id.hpp"
 #include "redGrapes/util/trace.hpp"
 
 #include <atomic>
@@ -22,7 +23,7 @@ namespace redGrapes
     template<typename TTask>
     struct TaskSpace : std::enable_shared_from_this<TaskSpace<TTask>>
     {
-        std::atomic<unsigned long> task_count;
+        std::atomic<TaskID> task_count;
         unsigned depth;
         TTask* parent;
 
@@ -64,13 +65,13 @@ namespace redGrapes
         void free_task(TTask* task)
         {
             TRACE_EVENT("TaskSpace", "free_task()");
-            unsigned count = task_count.fetch_sub(1) - 1;
+            TaskID count = task_count.fetch_sub(1) - 1;
 
-            unsigned worker_id = task->worker_id;
+            WorkerId worker_id = task->worker_id;
             task->~TTask();
 
             // FIXME: len of the Block is not correct since FunTask object is bigger than sizeof(Task)
-            TaskFreeCtx::worker_alloc_pool->get_alloc(worker_id).deallocate(
+            TaskFreeCtx::worker_alloc_pool.get_alloc(worker_id).deallocate(
                 memory::Block{(uintptr_t) task, sizeof(TTask)});
 
             // TODO: implement this using post-event of root-task?
@@ -90,7 +91,7 @@ namespace redGrapes
 
         bool empty() const
         {
-            unsigned tc = task_count.load();
+            TaskID tc = task_count.load();
             return tc == 0;
         }
     };
