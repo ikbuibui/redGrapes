@@ -34,6 +34,8 @@
 namespace redGrapes
 {
 
+    using ResourceID = uint16_t;
+
     template<typename TTask, typename AccessPolicy>
     class Resource;
 
@@ -41,16 +43,16 @@ namespace redGrapes
     class ResourceBase
     {
     protected:
-        static uint16_t generateID()
+        static ResourceID generateID()
         {
-            static std::atomic<uint16_t> id_counter;
+            static std::atomic<ResourceID> id_counter;
             return id_counter.fetch_add(1);
         }
 
     public:
         ChunkedList<TTask*, REDGRAPES_RUL_CHUNKSIZE> users;
         SpinLock users_mutex;
-        uint16_t id;
+        ResourceID id;
         uint8_t scope_level;
 
         /**
@@ -157,7 +159,7 @@ namespace redGrapes
             return this->obj->resource->scope_level;
         }
 
-        unsigned int resource_id() const
+        ResourceID resource_id() const
         {
             return this->obj->resource->id;
         }
@@ -321,7 +323,7 @@ namespace redGrapes
     public:
         Resource()
         {
-            static WorkerId i = 0;
+            static ResourceID i = 0;
 
             i = i++ % TaskFreeCtx::n_workers;
             base = redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(i);
