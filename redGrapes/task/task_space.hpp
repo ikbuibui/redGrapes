@@ -9,6 +9,7 @@
 
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/memory/block.hpp"
+#include "redGrapes/task/property/id.hpp"
 #include "redGrapes/util/trace.hpp"
 
 #include <atomic>
@@ -22,7 +23,7 @@ namespace redGrapes
     template<typename TTask>
     struct TaskSpace : std::enable_shared_from_this<TaskSpace<TTask>>
     {
-        std::atomic<unsigned long> task_count;
+        std::atomic<TaskID> task_count;
         unsigned depth;
         TTask* parent;
 
@@ -64,7 +65,7 @@ namespace redGrapes
         void free_task(TTask* task)
         {
             TRACE_EVENT("TaskSpace", "free_task()");
-            unsigned count = task_count.fetch_sub(1) - 1;
+            TaskID count = task_count.fetch_sub(1) - 1;
 
             WorkerId worker_id = task->worker_id;
             task->~TTask();
@@ -90,7 +91,7 @@ namespace redGrapes
 
         bool empty() const
         {
-            unsigned tc = task_count.load();
+            TaskID tc = task_count.load();
             return tc == 0;
         }
     };

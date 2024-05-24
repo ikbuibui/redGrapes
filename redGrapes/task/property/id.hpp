@@ -23,9 +23,9 @@ namespace redGrapes
     struct IDProperty
     {
     private:
-        static std::atomic_int& id_counter()
+        static std::atomic<TaskID>& id_counter()
         {
-            static std::atomic_int x;
+            static std::atomic<TaskID> x;
             return x;
         }
 
