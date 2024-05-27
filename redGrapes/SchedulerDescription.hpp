@@ -17,11 +17,10 @@ namespace redGrapes
     };
 
     template<typename T>
-    concept C_Exec = requires(T execDesc)
-    {
+    concept C_Exec = requires(T execDesc) {
         typename T::Key;
         typename T::ValueType;
-        {execDesc.scheduler};
+        { execDesc.scheduler };
     };
 
     template<typename TScheduler, typename TTag>
