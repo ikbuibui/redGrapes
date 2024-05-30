@@ -76,11 +76,11 @@ namespace redGrapes
     template<typename TTask>
     struct Future<void, TTask>
     {
-        Future(TTask& task) : task(task), taken(false)
+        Future(TTask& task) : taken(false), task(task)
         {
         }
 
-        Future(Future&& other) : task(other.task), taken(other.taken)
+        Future(Future&& other) : taken(other.taken), task(other.task)
         {
             SPDLOG_TRACE("MOVE future");
             other.taken = true;
