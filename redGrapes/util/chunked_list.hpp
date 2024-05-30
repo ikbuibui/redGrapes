@@ -137,9 +137,9 @@ namespace redGrapes
 
             Item()
                 // any item starts uninitialized
-                : iter_offset(1)
+                : storage(TrivialInit_t{})
+                , iter_offset(1)
                 , refcount(0)
-                , storage(TrivialInit_t{})
             {
             }
 

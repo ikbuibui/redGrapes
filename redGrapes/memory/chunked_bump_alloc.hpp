@@ -18,7 +18,7 @@
 #include <cstddef>
 
 #if REDGRAPES_ENABLE_BACKWARDCPP
-#    include <backward.hpp"
+#    include <backward.hpp>
 #endif
 
 namespace redGrapes

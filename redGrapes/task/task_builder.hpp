@@ -44,8 +44,8 @@ namespace redGrapes
     template<typename TTask, typename Callable, typename... Args>
     struct TaskBuilder : TTask::TaskProperties::template Builder<TaskBuilder<TTask, Callable, Args...>>
     {
-        using Impl = typename std::result_of<BindArgs<Callable, Args...>(Callable, Args...)>::type;
-        using Result = typename std::result_of<Callable(Args...)>::type;
+        using Impl = typename std::invoke_result_t<BindArgs<Callable, Args...>, Callable, Args...>;
+        using Result = typename std::invoke_result_t<Callable, Args...>;
 
         std::shared_ptr<TaskSpace<TTask>> space;
         FunTask<Impl, TTask>* task;

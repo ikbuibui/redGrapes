@@ -19,11 +19,8 @@ namespace redGrapes
 {
 
     template<typename T>
-    concept C_TaskProperty = requires(T taskProp, typename T::Patch patch)
-    {
-        {
-            taskProp.apply_patch(patch)
-        } -> std::same_as<void>;
+    concept C_TaskProperty = requires(T taskProp, typename T::Patch patch) {
+        { taskProp.apply_patch(patch) } -> std::same_as<void>;
     };
 
     template<C_TaskProperty... UserTaskProperties>
@@ -115,10 +112,10 @@ namespace redGrapes
     };
 
     template<typename F, typename TTask>
-    struct FunTask : ResultTask<typename std::result_of<F()>::type, TTask>
+    struct FunTask : ResultTask<typename std::invoke_result_t<F>, TTask>
     {
         FunTask(scheduler::IScheduler<TTask>& scheduler)
-            : ResultTask<typename std::result_of<F()>::type, TTask>(scheduler)
+            : ResultTask<typename std::invoke_result_t<F>, TTask>(scheduler)
         {
         }
 
@@ -128,7 +125,7 @@ namespace redGrapes
         {
         }
 
-        typename std::result_of<F()>::type run_result()
+        typename std::invoke_result_t<F> run_result()
         {
             return (*this->impl)();
         }

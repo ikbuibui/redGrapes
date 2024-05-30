@@ -34,6 +34,7 @@ namespace redGrapes
 
             Block allocate(size_t n_bytes)
             {
+                SPDLOG_TRACE("Allocate {} bytes on worker alloc [{}] ", n_bytes, worker_id);
                 return TaskFreeCtx::worker_alloc_pool.get_alloc(worker_id).allocate(n_bytes);
             }
 
