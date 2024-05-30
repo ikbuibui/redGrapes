@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/scheduler/scheduler.hpp"
 #include "redGrapes/util/chunked_list.hpp"
 
@@ -95,9 +96,9 @@ namespace redGrapes
             WakerId waker_id;
 
 
-            Event();
-            Event(Event&);
-            Event(Event&&);
+            Event(WorkerId worker_id);
+            Event(WorkerId worker_id, Event&);
+            Event(WorkerId worker_id, Event&&);
 
             bool is_reached();
             bool is_ready();

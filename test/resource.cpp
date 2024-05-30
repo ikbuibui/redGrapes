@@ -46,7 +46,8 @@ TEST_CASE("Resource ID")
 {
     auto rg = redGrapes::init(1);
     using RGTask = decltype(rg)::RGTask;
-    redGrapes::Resource<RGTask, Access> a, b;
+    auto a = rg.createResource<Access>();
+    auto b = rg.createResource<Access>();
 
     // same resource
     REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.make_access(Access{}), a.make_access(Access{})) == true);

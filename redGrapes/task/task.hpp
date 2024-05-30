@@ -48,8 +48,9 @@ namespace redGrapes
         std::atomic<uint8_t> removal_countdown;
         scheduler::IScheduler<Task<UserTaskProperties...>>* scheduler_p;
 
-        Task(WorkerId worker_id, scheduler::IScheduler<Task<UserTaskProperties...>>& scheduler)
-            : worker_id(worker_id)
+        Task(WorkerId _worker_id, scheduler::IScheduler<Task<UserTaskProperties...>>& scheduler)
+            : TaskProperties(_worker_id)
+            , worker_id(_worker_id)
             , removal_countdown(2)
             , scheduler_p(&scheduler)
         {

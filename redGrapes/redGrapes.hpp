@@ -188,7 +188,7 @@ namespace redGrapes
         template<typename Container, typename... Args>
         auto createFieldResource(Args&&... args) -> FieldResource<Container, RGTask>
         {
-            return FieldResource<Container, RGTask>(args...);
+            return FieldResource<Container, RGTask>(std::forward<Args>(args)...);
         }
 
         template<typename T>
@@ -200,13 +200,13 @@ namespace redGrapes
         template<typename T, typename... Args>
         auto createIOResource(Args&&... args) -> IOResource<T, RGTask>
         {
-            return IOResource<T, RGTask>(args...);
+            return IOResource<T, RGTask>(std::forward<Args>(args)...);
         }
 
         template<typename AccessPolicy>
         auto createResource() -> Resource<RGTask, AccessPolicy>
         {
-            return Resource<RGTask, AccessPolicy>();
+            return Resource<RGTask, AccessPolicy>(TaskFreeCtx::create_resource_uid());
         }
 
     private:

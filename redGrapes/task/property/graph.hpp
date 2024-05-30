@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/scheduler/event.hpp"
 
 #include <spdlog/spdlog.h>
@@ -42,6 +43,14 @@ namespace redGrapes
     template<typename TTask>
     struct GraphProperty
     {
+        GraphProperty(WorkerId worker_id)
+            : pre_event{worker_id}
+            , post_event{worker_id}
+            , result_set_event{worker_id}
+            , result_get_event{worker_id}
+        {
+        }
+
         TTask& operator*()
         {
             return *task;

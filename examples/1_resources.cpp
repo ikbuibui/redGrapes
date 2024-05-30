@@ -21,11 +21,12 @@ int main(int, char*[])
     redGrapes::ResourceUser<TTask> user1(
         {a.read(), // complete resource
          a.write().area({0}, {10}), // write only indices 0 to 10
-         b.write()});
+         b.write()},
+        0);
 
-    redGrapes::ResourceUser<TTask> user2({b.read()});
+    redGrapes::ResourceUser<TTask> user2({b.read()}, 0);
 
-    redGrapes::ResourceUser<TTask> user3({b.read(), c.write()});
+    redGrapes::ResourceUser<TTask> user3({b.read(), c.write()}, 0);
 
     std::cout << "is_serial(user1,user1) = " << is_serial(user1, user1) << std::endl;
     std::cout << "is_serial(user1,user2) = " << is_serial(user1, user2) << std::endl;

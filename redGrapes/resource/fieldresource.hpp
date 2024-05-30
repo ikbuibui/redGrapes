@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/resource/access/field.hpp"
 #include "redGrapes/resource/resource.hpp"
 
@@ -89,8 +90,14 @@ namespace redGrapes
             }
 
         protected:
-            AreaGuard(std::shared_ptr<Container> obj)
-                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(obj)
+            AreaGuard(ResourceId id, std::shared_ptr<Container> const& obj)
+                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(id, obj)
+            {
+            }
+
+            template<typename... Args>
+            AreaGuard(ResourceId id, Args&&... args)
+                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(id, std::forward<Args>(args)...)
             {
             }
 
@@ -168,7 +175,12 @@ namespace redGrapes
             {
             }
 
-            ReadGuard(std::shared_ptr<Container> obj) : AreaGuard<Container, TTask>(obj)
+            ReadGuard(ResourceId id, std::shared_ptr<Container> const& obj) : AreaGuard<Container, TTask>(id, obj)
+            {
+            }
+
+            template<typename... Args>
+            ReadGuard(ResourceId id, Args&&... args) : AreaGuard<Container, TTask>(id, std::forward<Args>(args)...)
             {
             }
         };
@@ -219,7 +231,12 @@ namespace redGrapes
             {
             }
 
-            WriteGuard(std::shared_ptr<Container> obj) : ReadGuard<Container, TTask>(obj)
+            WriteGuard(ResourceId id, std::shared_ptr<Container> const& obj) : ReadGuard<Container, TTask>(id, obj)
+            {
+            }
+
+            template<typename... Args>
+            WriteGuard(ResourceId id, Args&&... args) : ReadGuard<Container, TTask>(id, std::forward<Args>(args)...)
             {
             }
         };
@@ -231,13 +248,18 @@ namespace redGrapes
     {
         static constexpr size_t dim = trait::Field<Container>::dim;
 
-        FieldResource(Container* c) : fieldresource::WriteGuard<Container, TTask>(std::shared_ptr<Container>(c))
+        FieldResource(Container* c)
+            : fieldresource::WriteGuard<Container, TTask>(
+                  TaskFreeCtx::create_resource_uid(),
+                  std::shared_ptr<Container>(c))
         {
         }
 
         template<typename... Args>
         FieldResource(Args&&... args)
-            : fieldresource::WriteGuard<Container, TTask>(memory::alloc_shared<Container>(std::forward<Args>(args)...))
+            : fieldresource::WriteGuard<Container, TTask>(
+                  TaskFreeCtx::create_resource_uid(),
+                  std::forward<Args>(args)...)
         {
         }
     };

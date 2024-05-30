@@ -20,7 +20,8 @@ namespace redGrapes
     template<typename TTask>
     scheduler::EventPtr<TTask> GraphProperty<TTask>::make_event()
     {
-        auto event = memory::alloc_shared<scheduler::Event<TTask>>();
+        // create event on task->worker_id and pass it as arg also so event can create follower list on same worker
+        auto event = memory::alloc_shared_bind<scheduler::Event<TTask>>(task->worker_id, task->worker_id);
         event->add_follower(get_post_event());
         return scheduler::EventPtr<TTask>{event, task, scheduler::T_EVT_EXT};
     }
