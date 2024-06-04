@@ -42,9 +42,17 @@ namespace redGrapes
     template<typename TTask>
     struct ResourceUser
     {
-        ResourceUser();
-        ResourceUser(ResourceUser const& other);
-        ResourceUser(std::initializer_list<ResourceAccess<TTask>> list);
+        ResourceUser(WorkerId worker_id);
+        ResourceUser(ResourceUser const& other) = delete;
+
+        ResourceUser(ResourceUser<TTask> const& other, WorkerId worker_id)
+            : access_list(memory::Allocator(worker_id), other.access_list)
+            , unique_resources(memory::Allocator(worker_id), other.unique_resources)
+            , scope_level(other.scope_level)
+        {
+        }
+
+        ResourceUser(std::initializer_list<ResourceAccess<TTask>> list, WorkerId worker_id);
 
         void add_resource_access(ResourceAccess<TTask> ra);
         void rm_resource_access(ResourceAccess<TTask> ra);

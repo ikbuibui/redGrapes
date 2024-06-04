@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/task/property/trait.hpp"
 
 #include <fmt/format.h>
@@ -24,6 +25,10 @@ namespace redGrapes
         : T_Head
         , TaskPropertiesInherit<T_Tail...>
     {
+        TaskPropertiesInherit(WorkerId worker_id) : TaskPropertiesInherit<T_Tail...>(worker_id), T_Head(worker_id)
+        {
+        }
+
         template<typename B>
         struct Builder
             : T_Head::template Builder<B>
@@ -65,6 +70,10 @@ namespace redGrapes
     template<>
     struct TaskPropertiesInherit<PropEnd_t>
     {
+        TaskPropertiesInherit(WorkerId)
+        {
+        }
+
         template<typename PropertiesBuilder>
         struct Builder
         {
@@ -92,6 +101,10 @@ namespace redGrapes
     template<typename... Policies>
     struct TaskProperties1 : public TaskPropertiesInherit<Policies..., PropEnd_t>
     {
+        TaskProperties1(WorkerId worker_id) : TaskPropertiesInherit<Policies..., PropEnd_t>(worker_id)
+        {
+        }
+
         template<typename B>
         struct Builder : TaskPropertiesInherit<Policies..., PropEnd_t>::template Builder<B>
         {

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/resource/access/io.hpp"
 #include "redGrapes/resource/resource.hpp"
 
@@ -48,7 +49,14 @@ namespace redGrapes
             }
 
         protected:
-            ReadGuard(std::shared_ptr<T> obj) : SharedResourceObject<T, TTask, access::IOAccess>(obj)
+            ReadGuard(ResourceId id, std::shared_ptr<T> const& obj)
+                : SharedResourceObject<T, TTask, access::IOAccess>(id, obj)
+            {
+            }
+
+            template<typename... Args>
+            ReadGuard(ResourceId id, Args&&... args)
+                : SharedResourceObject<T, TTask, access::IOAccess>(id, std::forward<Args>(args)...)
             {
             }
         };
@@ -82,7 +90,12 @@ namespace redGrapes
             }
 
         protected:
-            WriteGuard(std::shared_ptr<T> obj) : ReadGuard<T, TTask>(obj)
+            WriteGuard(ResourceId id, std::shared_ptr<T> const& obj) : ReadGuard<T, TTask>(id, obj)
+            {
+            }
+
+            template<typename... Args>
+            WriteGuard(ResourceId id, Args&&... args) : ReadGuard<T, TTask>(id, std::forward<Args>(args)...)
             {
             }
         };
@@ -92,13 +105,14 @@ namespace redGrapes
     template<typename T, typename TTask>
     struct IOResource : public ioresource::WriteGuard<T, TTask>
     {
-        template<typename... Args>
-        IOResource(Args&&... args)
-            : ioresource::WriteGuard<T, TTask>(memory::alloc_shared<T>(std::forward<Args>(args)...))
+        IOResource(std::shared_ptr<T> const& o)
+            : ioresource::WriteGuard<T, TTask>(TaskFreeCtx::create_resource_uid(), o)
         {
         }
 
-        IOResource(std::shared_ptr<T> o) : ioresource::WriteGuard<T, TTask>(o)
+        template<typename... Args>
+        IOResource(Args&&... args)
+            : ioresource::WriteGuard<T, TTask>(TaskFreeCtx::create_resource_uid(), std::forward<Args>(args)...)
         {
         }
 

@@ -77,12 +77,13 @@ namespace redGrapes
                  * yields until the request is done. While waiting
                  * for this request, other tasks will be executed.
                  *
+                 * Must be called inside a running task
                  * @param request The MPI request to wait for
                  * @return the resulting MPI status of the request
                  */
                 MPI_Status get_status(MPI_Request request)
                 {
-                    auto status = memory::alloc_shared<MPI_Status>();
+                    auto status = memory::alloc_shared_bind<MPI_Status>((*TaskCtx<TTask>::current_task)->worker_id);
                     auto event = *TaskCtx<TTask>::create_event();
 
                     // SPDLOG_TRACE("MPI RequestPool: status event = {}", (void*)event.get());

@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include "redGrapes/TaskCtx.hpp"
+#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/resource/resource_user.hpp"
 
 #include <fmt/format.h>
@@ -25,6 +27,10 @@ namespace redGrapes
     template<typename TTask>
     struct ResourceProperty : ResourceUser<TTask>
     {
+        ResourceProperty(WorkerId worker_id) : ResourceUser<TTask>(worker_id)
+        {
+        }
+
         template<typename PropertiesBuilder>
         struct Builder
         {
@@ -112,9 +118,10 @@ namespace redGrapes
             this->rm_resource_access(ra);
         }
 
+        // Only to be called inside a running task to update property
         void apply_patch(Patch const& patch)
         {
-            ResourceUser before(*this);
+            ResourceUser before(*this, (*TaskCtx<TTask>::current_task)->worker_id);
 
             for(auto x : patch.diff)
             {

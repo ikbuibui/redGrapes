@@ -34,7 +34,30 @@
 namespace redGrapes
 {
 
-    using ResourceID = uint16_t;
+    namespace mapping
+    {
+        template<typename MappingFunc>
+        struct MapResourceIdToWorker
+        {
+            MappingFunc mappingFunc;
+
+            WorkerId operator()(ResourceId resourceId)
+            {
+                return mappingFunc(resourceId);
+            }
+        };
+
+        struct ModuloMapping
+        {
+            WorkerId operator()(ResourceId resourceId)
+            {
+                return resourceId % TaskFreeCtx::n_workers;
+            }
+        };
+
+        static MapResourceIdToWorker<ModuloMapping> map_resource_to_worker{};
+
+    } // namespace mapping
 
     template<typename TTask, typename AccessPolicy>
     class Resource;
@@ -42,32 +65,20 @@ namespace redGrapes
     template<typename TTask>
     class ResourceBase
     {
-    protected:
-        static ResourceID generateID()
-        {
-            static std::atomic<ResourceID> id_counter;
-            return id_counter.fetch_add(1);
-        }
-
     public:
         ChunkedList<TTask*, REDGRAPES_RUL_CHUNKSIZE> users;
         SpinLock users_mutex;
-        ResourceID id;
+        ResourceId id;
         uint8_t scope_level;
 
         /**
          * Create a new resource with an unused ID.
          */
-        ResourceBase()
-            : users(memory::Allocator(get_arena_id()))
-            , id(generateID())
+        ResourceBase(ResourceId id)
+            : users(memory::Allocator(mapping::map_resource_to_worker(id)))
+            , id(id)
             , scope_level(TaskCtx<TTask>::scope_depth())
         {
-        }
-
-        WorkerId get_arena_id() const
-        {
-            return id % TaskFreeCtx::n_workers;
         }
     };
 
@@ -159,7 +170,7 @@ namespace redGrapes
             return this->obj->resource->scope_level;
         }
 
-        ResourceID resource_id() const
+        ResourceId resource_id() const
         {
             return this->obj->resource->id;
         }
@@ -321,12 +332,10 @@ namespace redGrapes
         }
 
     public:
-        Resource()
-        {
-            static ResourceID i = 0;
+        Resource(ResourceId id)
+            : base{redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(mapping::map_resource_to_worker(id), id)}
 
-            i = i++ % TaskFreeCtx::n_workers;
-            base = redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(i);
+        {
         }
 
         /**
@@ -338,7 +347,8 @@ namespace redGrapes
          */
         ResourceAccess<TTask> make_access(AccessPolicy pol) const
         {
-            auto a = redGrapes::memory::alloc_shared_bind<Access>(base->get_arena_id(), base, pol);
+            auto a
+                = redGrapes::memory::alloc_shared_bind<Access>(mapping::map_resource_to_worker(base->id), base, pol);
             return ResourceAccess<TTask>(a);
         }
     }; // class Resource
@@ -349,11 +359,20 @@ namespace redGrapes
         // protected:
         std::shared_ptr<T> obj;
 
-        SharedResourceObject(std::shared_ptr<T> obj) : obj(obj)
+        SharedResourceObject(ResourceId id, std::shared_ptr<T> obj) : Resource<TTask, AccessPolicy>(id), obj(obj)
         {
         }
 
-        SharedResourceObject(SharedResourceObject const& other) : Resource<TTask, AccessPolicy>(other), obj(other.obj)
+        SharedResourceObject(ResourceId id, SharedResourceObject const& other)
+            : Resource<TTask, AccessPolicy>(id)
+            , obj(other.obj)
+        {
+        }
+
+        template<typename... Args>
+        SharedResourceObject(ResourceId id, Args&&... args)
+            : Resource<TTask, AccessPolicy>(id)
+            , obj{memory::alloc_shared_bind<T>(mapping::map_resource_to_worker(id), std::forward<Args>(args)...)}
         {
         }
     }; // struct SharedResourceObject

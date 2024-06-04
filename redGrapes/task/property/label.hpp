@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "redGrapes/memory/allocator.hpp"
+#include "redGrapes/TaskFreeCtx.hpp"
 
 #include <fmt/format.h>
 
@@ -22,9 +22,14 @@ namespace redGrapes
 
     struct LabelProperty
     {
-        using string = std::basic_string<char, std::char_traits<char>, memory::StdAllocator<char>>;
+        // TODO Optimization, use the workerId to allocate the label string seperate from the task
+        // using string = std::basic_string<char, std::char_traits<char>, memory::StdAllocator<char>>;
 
-        string label;
+        LabelProperty(WorkerId)
+        {
+        }
+
+        std::string label;
 
         template<typename TaskBuilder>
         struct Builder
@@ -35,7 +40,7 @@ namespace redGrapes
             {
             }
 
-            TaskBuilder& label(string const& l)
+            TaskBuilder& label(std::string const& l)
             {
                 builder.task->label = l;
                 return builder;

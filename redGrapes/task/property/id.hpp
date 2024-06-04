@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include "redGrapes/TaskFreeCtx.hpp"
+
 #include <fmt/format.h>
 
 #include <atomic>
@@ -32,15 +34,15 @@ namespace redGrapes
     public:
         TaskID task_id;
 
-        IDProperty() : task_id(-1) // id_counter().fetch_add( 1, std::memory_order_seq_cst ) )
+        IDProperty(WorkerId) : task_id(-1) // id_counter().fetch_add( 1, std::memory_order_seq_cst ) )
         {
         }
 
-        IDProperty(IDProperty&& other) : task_id(other.task_id)
+        IDProperty(WorkerId, IDProperty&& other) : task_id(other.task_id)
         {
         }
 
-        IDProperty(IDProperty const& other) : task_id(other.task_id)
+        IDProperty(WorkerId, IDProperty const& other) : task_id(other.task_id)
         {
         }
 
@@ -75,7 +77,7 @@ namespace redGrapes
             };
         };
 
-        void apply_patch(Patch const&){};
+        void apply_patch(Patch const&) {};
     };
 
 } // namespace redGrapes

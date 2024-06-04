@@ -21,25 +21,17 @@ namespace redGrapes
     }
 
     template<typename TTask>
-    ResourceUser<TTask>::ResourceUser()
-        : access_list(memory::Allocator())
-        , unique_resources(memory::Allocator())
+    ResourceUser<TTask>::ResourceUser(WorkerId worker_id)
+        : access_list(memory::Allocator(worker_id))
+        , unique_resources(memory::Allocator(worker_id))
         , scope_level(TaskCtx<TTask>::scope_depth())
     {
     }
 
     template<typename TTask>
-    ResourceUser<TTask>::ResourceUser(ResourceUser<TTask> const& other)
-        : access_list(memory::Allocator(), other.access_list)
-        , unique_resources(memory::Allocator(), other.unique_resources)
-        , scope_level(other.scope_level)
-    {
-    }
-
-    template<typename TTask>
-    ResourceUser<TTask>::ResourceUser(std::initializer_list<ResourceAccess<TTask>> list)
-        : access_list(memory::Allocator())
-        , unique_resources(memory::Allocator())
+    ResourceUser<TTask>::ResourceUser(std::initializer_list<ResourceAccess<TTask>> list, WorkerId worker_id)
+        : access_list(memory::Allocator(worker_id))
+        , unique_resources(memory::Allocator(worker_id))
         , scope_level(TaskCtx<TTask>::scope_depth())
     {
         for(auto& ra : list)

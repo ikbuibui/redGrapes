@@ -20,25 +20,25 @@ namespace redGrapes
     namespace scheduler
     {
         template<typename TTask>
-        Event<TTask>::Event() : followers(memory::Allocator())
-                              , waker_id(-1)
-                              , state(1)
+        Event<TTask>::Event(WorkerId worker_id) : followers(memory::Allocator(worker_id))
+                                                , state(1)
+                                                , waker_id(-1)
         {
         }
 
         template<typename TTask>
-        Event<TTask>::Event(Event& other)
-            : followers(memory::Allocator())
-            , waker_id(other.waker_id)
+        Event<TTask>::Event(WorkerId worker_id, Event& other)
+            : followers(memory::Allocator(worker_id))
             , state((uint16_t) other.state)
+            , waker_id(other.waker_id)
         {
         }
 
         template<typename TTask>
-        Event<TTask>::Event(Event&& other)
-            : state((uint16_t) other.state)
+        Event<TTask>::Event(WorkerId worker_id, Event&& other)
+            : followers(memory::Allocator(worker_id))
+            , state((uint16_t) other.state)
             , waker_id(other.waker_id)
-            , followers(memory::Allocator())
         {
         }
 

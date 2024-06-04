@@ -20,6 +20,7 @@ namespace redGrapes
 {
 
     using WorkerId = uint8_t;
+    using ResourceId = uint16_t;
 
     /** WorkerID of parser to wake it up
      * ID 0,1,2... are used for worker threads
@@ -49,6 +50,12 @@ namespace redGrapes
         static inline WorkerId n_workers;
         static inline WorkerAllocPool worker_alloc_pool;
         static inline CondVar cv{0};
+
+        static inline ResourceId create_resource_uid()
+        {
+            static std::atomic<ResourceId> id = 0;
+            return id++;
+        }
 
         static inline std::function<void()> idle = []
         {
