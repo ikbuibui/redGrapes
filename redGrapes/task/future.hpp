@@ -58,7 +58,7 @@ namespace redGrapes
             taken = true;
             task.get_result_get_event().notify();
 
-            return std::move(result);
+            return result;
         }
 
         /*! check if the result is already computed

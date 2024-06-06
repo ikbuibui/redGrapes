@@ -15,6 +15,7 @@
 #include <redGrapes/scheduler/pool_scheduler.hpp>
 #include <redGrapes/task/property/label.hpp>
 
+#include <array>
 #include <iostream>
 
 /**
@@ -102,9 +103,9 @@ int main()
         mpi_config.write());
 
     // main loop
-    redGrapes::FieldResource<std::array<int, 4>, RGTask> field[2] = {
-        redGrapes::FieldResource<std::array<int, 4>, RGTask>(new std::array<int, 4>()),
-        redGrapes::FieldResource<std::array<int, 4>, RGTask>(new std::array<int, 4>()),
+    std::array<redGrapes::FieldResource<std::array<int, 4>, RGTask>, 2> field = {
+        redGrapes::FieldResource<std::array<int, 4>, RGTask>(),
+        redGrapes::FieldResource<std::array<int, 4>, RGTask>(),
     };
 
     int current = 0;

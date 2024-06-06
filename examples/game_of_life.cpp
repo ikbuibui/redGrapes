@@ -57,7 +57,7 @@ int main(int, char*[])
     std::vector<redGrapes::FieldResource<Buffer, TaskType>> buffers;
 
     for(size_t i = 0; i < 4; ++i)
-        buffers.emplace_back(new Buffer());
+        buffers.emplace_back();
 
     int current = 0;
 
