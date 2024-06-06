@@ -323,8 +323,6 @@ namespace redGrapes
             AccessPolicy policy;
         }; // struct ThisResourceAccess
 
-        friend class ResourceBase<TTask>;
-
         std::shared_ptr<ResourceBase<TTask>> base;
 
         Resource(std::shared_ptr<ResourceBase<TTask>> base) : base(base)
@@ -351,6 +349,13 @@ namespace redGrapes
                 = redGrapes::memory::alloc_shared_bind<Access>(mapping::map_resource_to_worker(base->id), base, pol);
             return ResourceAccess<TTask>(a);
         }
+
+        ResourceId resource_id() const
+        {
+            return base->id;
+        }
+
+
     }; // class Resource
 
     template<typename T, typename TTask, typename AccessPolicy>

@@ -40,7 +40,7 @@ namespace redGrapes
                 workers.reserve(num_workers);
 
                 SPDLOG_DEBUG("populate WorkerPool with {} workers", num_workers);
-                for(size_t worker_id = base_id; worker_id < base_id + num_workers; ++worker_id)
+                for(WorkerId worker_id = base_id; worker_id < base_id + num_workers; ++worker_id)
                 {
                     WorkerId pu_id = worker_id % TaskFreeCtx::n_pus;
                     // allocate worker with id `i` on arena `i`,

@@ -228,7 +228,7 @@ namespace redGrapes
     }
 
     template<C_TaskProperty... UserTaskProps>
-    [[nodiscard]] inline auto init(size_t n_workers = std::thread::hardware_concurrency())
+    [[nodiscard]] inline auto init(WorkerId n_workers = std::thread::hardware_concurrency())
     {
         auto execDesc = SchedulerDescription(
             std::make_shared<scheduler::PoolScheduler<dispatch::thread::DefaultWorker<Task<UserTaskProps...>>>>(

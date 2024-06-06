@@ -293,11 +293,6 @@ namespace redGrapes
              */
             uintptr_t cur_item;
 
-            inline Item* get_item_ptr() const
-            {
-                return (Item*) (cur_item & (~(uintptr_t) 0 >> 1));
-            }
-
             inline bool has_item() const
             {
                 return cur_item & ~(~(uintptr_t) 0 >> 1);
@@ -320,6 +315,11 @@ namespace redGrapes
              * Only by `rend()`, and if the container is empty also `rbegin()` shall
              * return an iterator with invalid idx.
              */
+            inline Item* get_item_ptr() const
+            {
+                return (Item*) (cur_item & (~(uintptr_t) 0 >> 1));
+            }
+
             bool is_valid_idx() const
             {
                 return ((bool) chunk) && (get_item_ptr() >= chunk->first_item)
@@ -454,12 +454,23 @@ namespace redGrapes
             {
             }
 
-            inline bool operator!=(BackwardIterator<is_const> const& other) const
+            BackwardIterator(BackwardIterator<is_const> const& other) : ItemAccess<is_const>(other)
             {
-                return this->get_item_ptr() != other.get_item_ptr();
             }
 
-            BackwardIterator<is_const>& operator=(BackwardIterator<is_const> const& other)
+            ~BackwardIterator() = default;
+
+            friend bool operator==(BackwardIterator<is_const> const& a, BackwardIterator<is_const> const& b)
+            {
+                return a.get_item_ptr() == b.get_item_ptr();
+            }
+
+            friend bool operator!=(BackwardIterator<is_const> const& a, BackwardIterator<is_const> const& b)
+            {
+                return !(a == b);
+            }
+
+            BackwardIterator& operator=(BackwardIterator<is_const> const& other)
             {
                 this->release();
                 this->cur_item = (uintptr_t) other.get_item_ptr();
