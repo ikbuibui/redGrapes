@@ -14,6 +14,7 @@
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/resource/access/field.hpp"
 #include "redGrapes/resource/resource.hpp"
+#include "redGrapes/util/traits.hpp"
 
 namespace redGrapes
 {
@@ -101,6 +102,19 @@ namespace redGrapes
             {
             }
 
+            AreaGuard(
+                Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res,
+                std::shared_ptr<Container> const& obj)
+                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(res, obj)
+            {
+            }
+
+            template<typename... Args>
+            AreaGuard(Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
+                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(res, std::forward<Args>(args)...)
+            {
+            }
+
             AreaGuard(AreaGuard const& other, Index begin, Index end)
                 : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(other)
                 , m_area(other.make_area(begin, end))
@@ -183,6 +197,19 @@ namespace redGrapes
             ReadGuard(ResourceId id, Args&&... args) : AreaGuard<Container, TTask>(id, std::forward<Args>(args)...)
             {
             }
+
+            ReadGuard(
+                Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res,
+                std::shared_ptr<Container> const& obj)
+                : AreaGuard<Container, TTask>(res, obj)
+            {
+            }
+
+            template<typename... Args>
+            ReadGuard(Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
+                : AreaGuard<Container, TTask>(res, std::forward<Args>(args)...)
+            {
+            }
         };
 
         template<typename Container, typename TTask>
@@ -239,6 +266,19 @@ namespace redGrapes
             WriteGuard(ResourceId id, Args&&... args) : ReadGuard<Container, TTask>(id, std::forward<Args>(args)...)
             {
             }
+
+            WriteGuard(
+                Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res,
+                std::shared_ptr<Container> const& obj)
+                : ReadGuard<Container, TTask>(res, obj)
+            {
+            }
+
+            template<typename... Args>
+            WriteGuard(Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
+                : ReadGuard<Container, TTask>(res, std::forward<Args>(args)...)
+            {
+            }
         };
 
     } // namespace fieldresource
@@ -256,10 +296,26 @@ namespace redGrapes
         }
 
         template<typename... Args>
+        requires(
+            !(traits::is_specialization_of<std::decay_t<traits::first_type_t<Args...>>, FieldResource>::value
+              || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, Container*>) )
+
         FieldResource(Args&&... args)
             : fieldresource::WriteGuard<Container, TTask>(
                   TaskFreeCtx::create_resource_uid(),
                   std::forward<Args>(args)...)
+        {
+        }
+
+        template<typename U>
+        FieldResource(FieldResource<U, TTask> const& res, Container* c)
+            : fieldresource::WriteGuard<Container, TTask>(res, std::shared_ptr<Container>(c))
+        {
+        }
+
+        template<typename U, typename... Args>
+        FieldResource(FieldResource<U, TTask> const& res, Args&&... args)
+            : fieldresource::WriteGuard<Container, TTask>(res, std::forward<Args>(args)...)
         {
         }
     };

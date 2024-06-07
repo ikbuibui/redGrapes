@@ -325,10 +325,6 @@ namespace redGrapes
 
         std::shared_ptr<ResourceBase<TTask>> base;
 
-        Resource(std::shared_ptr<ResourceBase<TTask>> base) : base(base)
-        {
-        }
-
     public:
         Resource(ResourceId id)
             : base{redGrapes::memory::alloc_shared_bind<ResourceBase<TTask>>(mapping::map_resource_to_worker(id), id)}
@@ -364,13 +360,9 @@ namespace redGrapes
         // protected:
         std::shared_ptr<T> obj;
 
-        SharedResourceObject(ResourceId id, std::shared_ptr<T> obj) : Resource<TTask, AccessPolicy>(id), obj(obj)
-        {
-        }
-
-        SharedResourceObject(ResourceId id, SharedResourceObject const& other)
+        SharedResourceObject(ResourceId id, std::shared_ptr<T> const& obj)
             : Resource<TTask, AccessPolicy>(id)
-            , obj(other.obj)
+            , obj(obj)
         {
         }
 
@@ -380,6 +372,22 @@ namespace redGrapes
             , obj{memory::alloc_shared_bind<T>(mapping::map_resource_to_worker(id), std::forward<Args>(args)...)}
         {
         }
+
+        SharedResourceObject(Resource<TTask, AccessPolicy> const& res, std::shared_ptr<T> const& obj)
+            : Resource<TTask, AccessPolicy>{res}
+            , obj{obj}
+        {
+        }
+
+        template<typename... Args>
+        SharedResourceObject(Resource<TTask, AccessPolicy> const& res, Args&&... args)
+            : Resource<TTask, AccessPolicy>{res}
+            , obj{memory::alloc_shared_bind<T>(
+                  mapping::map_resource_to_worker(res.resource_id()),
+                  std::forward<Args>(args)...)}
+        {
+        }
+
     }; // struct SharedResourceObject
 
 } // namespace redGrapes

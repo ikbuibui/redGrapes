@@ -14,6 +14,11 @@
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/resource/access/io.hpp"
 #include "redGrapes/resource/resource.hpp"
+#include "redGrapes/util/traits.hpp"
+
+#include <memory>
+#include <type_traits>
+#include <utility>
 
 namespace redGrapes
 {
@@ -59,6 +64,17 @@ namespace redGrapes
                 : SharedResourceObject<T, TTask, access::IOAccess>(id, std::forward<Args>(args)...)
             {
             }
+
+            ReadGuard(Resource<TTask, access::IOAccess> const& res, std::shared_ptr<T> const& obj)
+                : SharedResourceObject<T, TTask, access::IOAccess>(res, obj)
+            {
+            }
+
+            template<typename... Args>
+            ReadGuard(Resource<TTask, access::IOAccess> const& res, Args&&... args)
+                : SharedResourceObject<T, TTask, access::IOAccess>(res, std::forward<Args>(args)...)
+            {
+            }
         };
 
         template<typename T, typename TTask>
@@ -98,6 +114,17 @@ namespace redGrapes
             WriteGuard(ResourceId id, Args&&... args) : ReadGuard<T, TTask>(id, std::forward<Args>(args)...)
             {
             }
+
+            WriteGuard(Resource<TTask, access::IOAccess> const& res, std::shared_ptr<T> const& obj)
+                : ReadGuard<T, TTask>(res, obj)
+            {
+            }
+
+            template<typename... Args>
+            WriteGuard(Resource<TTask, access::IOAccess> const& res, Args&&... args)
+                : ReadGuard<T, TTask>(res, std::forward<Args>(args)...)
+            {
+            }
         };
 
     } // namespace ioresource
@@ -111,10 +138,26 @@ namespace redGrapes
         }
 
         template<typename... Args>
+        requires(
+            !(traits::is_specialization_of<std::decay_t<traits::first_type_t<Args...>>, IOResource>::value
+              || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, std::shared_ptr<T>>) )
         IOResource(Args&&... args)
             : ioresource::WriteGuard<T, TTask>(TaskFreeCtx::create_resource_uid(), std::forward<Args>(args)...)
         {
         }
+
+        template<typename U>
+        IOResource(IOResource<U, TTask> const& res, std::shared_ptr<T> const& obj)
+            : ioresource::WriteGuard<T, TTask>(res, obj)
+        {
+        }
+
+        template<typename U, typename... Args>
+        IOResource(IOResource<U, TTask> const& res, Args&&... args)
+            : ioresource::WriteGuard<T, TTask>(res, std::forward<Args>(args)...)
+        {
+        }
+
 
     }; // struct IOResource
 
