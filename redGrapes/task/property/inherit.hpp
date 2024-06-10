@@ -25,7 +25,7 @@ namespace redGrapes
         : T_Head
         , TaskPropertiesInherit<T_Tail...>
     {
-        TaskPropertiesInherit(WorkerId worker_id) : TaskPropertiesInherit<T_Tail...>(worker_id), T_Head(worker_id)
+        TaskPropertiesInherit(WorkerId worker_id) :T_Head(worker_id), TaskPropertiesInherit<T_Tail...>(worker_id)
         {
         }
 
