@@ -154,10 +154,10 @@ namespace redGrapes
             new(task) FunTask<Impl, RGTask>(worker_id, scope_depth_impl(), *scheduler_map[TSchedTag{}]);
 
             return TaskBuilder<RGTask, Callable, Args...>(
-              task,
-              current_task_space(),
-              std::forward<Callable>(f),
-              std::forward<Args>(args)...);
+                task,
+                current_task_space(),
+                std::forward<Callable>(f),
+                std::forward<Args>(args)...);
         }
 
         template<typename Callable, typename... Args>
