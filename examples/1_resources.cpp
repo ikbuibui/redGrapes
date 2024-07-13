@@ -12,21 +12,21 @@
 int main(int, char*[])
 {
     auto rg = redGrapes::init(1);
-    using TTask = decltype(rg)::RGTask;
 
     auto a = rg.createFieldResource<std::vector<int>>();
     auto b = rg.createIOResource<int>();
     auto c = rg.createIOResource<int>();
 
-    redGrapes::ResourceUser<TTask> user1(
+    redGrapes::ResourceUser user1(
         {a.read(), // complete resource
          a.write().area({0}, {10}), // write only indices 0 to 10
          b.write()},
+        0,
         0);
 
-    redGrapes::ResourceUser<TTask> user2({b.read()}, 0);
+    redGrapes::ResourceUser user2({b.read()}, 0, 0);
 
-    redGrapes::ResourceUser<TTask> user3({b.read(), c.write()}, 0);
+    redGrapes::ResourceUser user3({b.read(), c.write()}, 0, 0);
 
     std::cout << "is_serial(user1,user1) = " << is_serial(user1, user1) << std::endl;
     std::cout << "is_serial(user1,user2) = " << is_serial(user1, user2) << std::endl;

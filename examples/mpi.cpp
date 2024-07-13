@@ -93,7 +93,7 @@ int main()
         });
 
     // initialize MPI config
-    redGrapes::IOResource<MPIConfig, RGTask> mpi_config;
+    redGrapes::IOResource<MPIConfig> mpi_config;
     rg.emplace_task<MPITag>(
         [](auto config)
         {
@@ -103,9 +103,9 @@ int main()
         mpi_config.write());
 
     // main loop
-    std::array<redGrapes::FieldResource<std::array<int, 4>, RGTask>, 2> field = {
-        redGrapes::FieldResource<std::array<int, 4>, RGTask>(),
-        redGrapes::FieldResource<std::array<int, 4>, RGTask>(),
+    std::array<redGrapes::FieldResource<std::array<int, 4>>, 2> field = {
+        redGrapes::FieldResource<std::array<int, 4>>(),
+        redGrapes::FieldResource<std::array<int, 4>>(),
     };
 
     int current = 0;

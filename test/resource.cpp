@@ -45,47 +45,45 @@ struct fmt::formatter<Access>
 TEST_CASE("Resource ID")
 {
     auto rg = redGrapes::init(1);
-    using RGTask = decltype(rg)::RGTask;
     auto a = rg.createResource<Access>();
     auto b = rg.createResource<Access>();
 
     // same resource
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.make_access(Access{}), a.make_access(Access{})) == true);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.make_access(Access{}), b.make_access(Access{})) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.make_access(Access{}), a.make_access(Access{})) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.make_access(Access{}), b.make_access(Access{})) == true);
 
     // same resource, but copied
-    redGrapes::Resource<RGTask, Access> a2(a);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.make_access(Access{}), a2.make_access(Access{})) == true);
+    redGrapes::Resource<Access> a2(a);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.make_access(Access{}), a2.make_access(Access{})) == true);
 
     // different resource
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.make_access(Access{}), b.make_access(Access{})) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.make_access(Access{}), a.make_access(Access{})) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.make_access(Access{}), b.make_access(Access{})) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.make_access(Access{}), a.make_access(Access{})) == false);
 }
 
 TEST_CASE("IOResource")
 {
     auto rg = redGrapes::init(1);
-    using RGTask = decltype(rg)::RGTask;
 
-    redGrapes::IOResource<int, RGTask> a, b;
+    redGrapes::IOResource<int> a, b;
 
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.read(), a.read()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.read(), a.write()) == true);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.write(), a.read()) == true);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.write(), a.write()) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.read(), a.read()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.read(), a.write()) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.write(), a.read()) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.write(), a.write()) == true);
 
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.read(), b.read()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.read(), b.write()) == true);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.write(), b.read()) == true);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.write(), b.write()) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.read(), b.read()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.read(), b.write()) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.write(), b.read()) == true);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.write(), b.write()) == true);
 
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.read(), b.read()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.read(), b.write()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.write(), b.read()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(a.write(), b.write()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.read(), b.read()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.read(), b.write()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.write(), b.read()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(a.write(), b.write()) == false);
 
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.read(), a.read()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.read(), a.write()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.write(), a.read()) == false);
-    REQUIRE(redGrapes::ResourceAccess<RGTask>::is_serial(b.write(), a.write()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.read(), a.read()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.read(), a.write()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.write(), a.read()) == false);
+    REQUIRE(redGrapes::ResourceAccess::is_serial(b.write(), a.write()) == false);
 }

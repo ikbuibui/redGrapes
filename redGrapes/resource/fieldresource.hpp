@@ -73,8 +73,8 @@ namespace redGrapes
     namespace fieldresource
     {
 
-        template<typename Container, typename TTask>
-        struct AreaGuard : SharedResourceObject<Container, TTask, access::FieldAccess<trait::Field<Container>::dim>>
+        template<typename Container>
+        struct AreaGuard : SharedResourceObject<Container, access::FieldAccess<trait::Field<Container>::dim>>
         {
             static constexpr size_t dim = trait::Field<Container>::dim;
             using Item = typename trait::Field<Container>::Item;
@@ -92,31 +92,31 @@ namespace redGrapes
 
         protected:
             AreaGuard(ResourceId id, std::shared_ptr<Container> const& obj)
-                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(id, obj)
+                : SharedResourceObject<Container, access::FieldAccess<dim>>(id, obj)
             {
             }
 
             template<typename... Args>
             AreaGuard(ResourceId id, Args&&... args)
-                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(id, std::forward<Args>(args)...)
+                : SharedResourceObject<Container, access::FieldAccess<dim>>(id, std::forward<Args>(args)...)
             {
             }
 
             AreaGuard(
-                Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res,
+                Resource<access::FieldAccess<trait::Field<Container>::dim>> const& res,
                 std::shared_ptr<Container> const& obj)
-                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(res, obj)
+                : SharedResourceObject<Container, access::FieldAccess<dim>>(res, obj)
             {
             }
 
             template<typename... Args>
-            AreaGuard(Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
-                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(res, std::forward<Args>(args)...)
+            AreaGuard(Resource<access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
+                : SharedResourceObject<Container, access::FieldAccess<dim>>(res, std::forward<Args>(args)...)
             {
             }
 
             AreaGuard(AreaGuard const& other, Index begin, Index end)
-                : SharedResourceObject<Container, TTask, access::FieldAccess<dim>>(other)
+                : SharedResourceObject<Container, access::FieldAccess<dim>>(other)
                 , m_area(other.make_area(begin, end))
             {
             }
@@ -144,12 +144,12 @@ namespace redGrapes
             access::ArrayAccess<access::AreaAccess, dim> m_area;
         };
 
-        template<typename Container, typename TTask>
-        struct ReadGuard : AreaGuard<Container, TTask>
+        template<typename Container>
+        struct ReadGuard : AreaGuard<Container>
         {
             static constexpr size_t dim = trait::Field<Container>::dim;
-            using typename AreaGuard<Container, TTask>::Index;
-            using typename AreaGuard<Container, TTask>::Item;
+            using typename AreaGuard<Container>::Index;
+            using typename AreaGuard<Container>::Item;
 
             ReadGuard read() const noexcept
             {
@@ -179,45 +179,45 @@ namespace redGrapes
                 return this->obj.get();
             }
 
-            operator ResourceAccess<TTask>() const noexcept
+            operator ResourceAccess() const noexcept
             {
                 return this->make_access(access::FieldAccess<dim>(access::IOAccess::read, this->m_area));
             }
 
         protected:
-            ReadGuard(ReadGuard const& other, Index begin, Index end) : AreaGuard<Container, TTask>(other, begin, end)
+            ReadGuard(ReadGuard const& other, Index begin, Index end) : AreaGuard<Container>(other, begin, end)
             {
             }
 
-            ReadGuard(ResourceId id, std::shared_ptr<Container> const& obj) : AreaGuard<Container, TTask>(id, obj)
+            ReadGuard(ResourceId id, std::shared_ptr<Container> const& obj) : AreaGuard<Container>(id, obj)
             {
             }
 
             template<typename... Args>
-            ReadGuard(ResourceId id, Args&&... args) : AreaGuard<Container, TTask>(id, std::forward<Args>(args)...)
+            ReadGuard(ResourceId id, Args&&... args) : AreaGuard<Container>(id, std::forward<Args>(args)...)
             {
             }
 
             ReadGuard(
-                Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res,
+                Resource<access::FieldAccess<trait::Field<Container>::dim>> const& res,
                 std::shared_ptr<Container> const& obj)
-                : AreaGuard<Container, TTask>(res, obj)
+                : AreaGuard<Container>(res, obj)
             {
             }
 
             template<typename... Args>
-            ReadGuard(Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
-                : AreaGuard<Container, TTask>(res, std::forward<Args>(args)...)
+            ReadGuard(Resource<access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
+                : AreaGuard<Container>(res, std::forward<Args>(args)...)
             {
             }
         };
 
-        template<typename Container, typename TTask>
-        struct WriteGuard : ReadGuard<Container, TTask>
+        template<typename Container>
+        struct WriteGuard : ReadGuard<Container>
         {
             static constexpr size_t dim = trait::Field<Container>::dim;
-            using typename ReadGuard<Container, TTask>::Index;
-            using typename ReadGuard<Container, TTask>::Item;
+            using typename ReadGuard<Container>::Index;
+            using typename ReadGuard<Container>::Item;
 
             WriteGuard write() const noexcept
             {
@@ -247,51 +247,48 @@ namespace redGrapes
                 return this->obj.get();
             }
 
-            operator ResourceAccess<TTask>() const noexcept
+            operator ResourceAccess() const noexcept
             {
                 return this->make_access(access::FieldAccess<dim>(access::IOAccess::write, this->m_area));
             }
 
         protected:
-            WriteGuard(WriteGuard const& other, Index begin, Index end)
-                : ReadGuard<Container, TTask>(other, begin, end)
+            WriteGuard(WriteGuard const& other, Index begin, Index end) : ReadGuard<Container>(other, begin, end)
             {
             }
 
-            WriteGuard(ResourceId id, std::shared_ptr<Container> const& obj) : ReadGuard<Container, TTask>(id, obj)
+            WriteGuard(ResourceId id, std::shared_ptr<Container> const& obj) : ReadGuard<Container>(id, obj)
             {
             }
 
             template<typename... Args>
-            WriteGuard(ResourceId id, Args&&... args) : ReadGuard<Container, TTask>(id, std::forward<Args>(args)...)
+            WriteGuard(ResourceId id, Args&&... args) : ReadGuard<Container>(id, std::forward<Args>(args)...)
             {
             }
 
             WriteGuard(
-                Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res,
+                Resource<access::FieldAccess<trait::Field<Container>::dim>> const& res,
                 std::shared_ptr<Container> const& obj)
-                : ReadGuard<Container, TTask>(res, obj)
+                : ReadGuard<Container>(res, obj)
             {
             }
 
             template<typename... Args>
-            WriteGuard(Resource<TTask, access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
-                : ReadGuard<Container, TTask>(res, std::forward<Args>(args)...)
+            WriteGuard(Resource<access::FieldAccess<trait::Field<Container>::dim>> const& res, Args&&... args)
+                : ReadGuard<Container>(res, std::forward<Args>(args)...)
             {
             }
         };
 
     } // namespace fieldresource
 
-    template<typename Container, typename TTask>
-    struct FieldResource : fieldresource::WriteGuard<Container, TTask>
+    template<typename Container>
+    struct FieldResource : fieldresource::WriteGuard<Container>
     {
         static constexpr size_t dim = trait::Field<Container>::dim;
 
         FieldResource(Container* c)
-            : fieldresource::WriteGuard<Container, TTask>(
-                  TaskFreeCtx::create_resource_uid(),
-                  std::shared_ptr<Container>(c))
+            : fieldresource::WriteGuard<Container>(TaskFreeCtx::create_resource_uid(), std::shared_ptr<Container>(c))
         {
         }
 
@@ -301,21 +298,19 @@ namespace redGrapes
               || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, Container*>) )
 
         FieldResource(Args&&... args)
-            : fieldresource::WriteGuard<Container, TTask>(
-                  TaskFreeCtx::create_resource_uid(),
-                  std::forward<Args>(args)...)
+            : fieldresource::WriteGuard<Container>(TaskFreeCtx::create_resource_uid(), std::forward<Args>(args)...)
         {
         }
 
         template<typename U>
-        FieldResource(FieldResource<U, TTask> const& res, Container* c)
-            : fieldresource::WriteGuard<Container, TTask>(res, std::shared_ptr<Container>(c))
+        FieldResource(FieldResource<U> const& res, Container* c)
+            : fieldresource::WriteGuard<Container>(res, std::shared_ptr<Container>(c))
         {
         }
 
         template<typename U, typename... Args>
-        FieldResource(FieldResource<U, TTask> const& res, Args&&... args)
-            : fieldresource::WriteGuard<Container, TTask>(res, std::forward<Args>(args)...)
+        FieldResource(FieldResource<U> const& res, Args&&... args)
+            : fieldresource::WriteGuard<Container>(res, std::forward<Args>(args)...)
         {
         }
     };

@@ -13,8 +13,7 @@
 
 #include <iostream>
 
-template<typename TTask>
-void print_matrix(std::vector<redGrapes::IOResource<double*, TTask>> A, int nblks, int blocksize)
+void print_matrix(std::vector<redGrapes::IOResource<double*>> A, int nblks, int blocksize)
 {
     for(int ia = 0; ia < nblks; ++ia)
     {
@@ -71,7 +70,7 @@ int main(int argc, char* argv[])
         Alin[i * N + i] += N;
 
     // initialize tiled matrix in column-major layout
-    std::vector<redGrapes::IOResource<double*, RGTask>> A(nblks * nblks);
+    std::vector<redGrapes::IOResource<double*>> A(nblks * nblks);
 
     // allocate each tile (also in column-major layout)
     for(size_t j = 0; j < nblks; ++j)

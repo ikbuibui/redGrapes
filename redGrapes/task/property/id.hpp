@@ -34,19 +34,20 @@ namespace redGrapes
     public:
         TaskID task_id;
 
-        IDProperty(WorkerId) : task_id(-1) // id_counter().fetch_add( 1, std::memory_order_seq_cst ) )
+        // Params workerId and scope_depth
+        IDProperty(WorkerId, unsigned) : task_id(-1) // id_counter().fetch_add( 1, std::memory_order_seq_cst ) )
         {
         }
 
-        IDProperty(WorkerId, IDProperty&& other) : task_id(other.task_id)
+        IDProperty(IDProperty&& other) : task_id(other.task_id)
         {
         }
 
-        IDProperty(WorkerId, IDProperty const& other) : task_id(other.task_id)
+        IDProperty(IDProperty const& other) : task_id(other.task_id)
         {
         }
 
-        IDProperty& operator=(IDProperty const& other)
+        IDProperty& operator=(IDProperty const&)
         {
             return *this;
         }

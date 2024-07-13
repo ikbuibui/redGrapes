@@ -6,7 +6,6 @@
  */
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/task/future.hpp"
 #include "redGrapes/task/task.hpp"
 #include "redGrapes/task/task_space.hpp"
@@ -47,12 +46,16 @@ namespace redGrapes
         using Impl = typename std::invoke_result_t<BindArgs<Callable, Args...>, Callable, Args...>;
         using Result = typename std::invoke_result_t<Callable, Args...>;
 
-        std::shared_ptr<TaskSpace<TTask>> space;
+        std::shared_ptr<TaskSpace> space;
         FunTask<Impl, TTask>* task;
 
-        TaskBuilder(FunTask<Impl, TTask>* task, Callable&& f, Args&&... args)
+        TaskBuilder(
+            FunTask<Impl, TTask>* task,
+            std::shared_ptr<TaskSpace> const& current_space,
+            Callable&& f,
+            Args&&... args)
             : TTask::TaskProperties::template Builder<TaskBuilder>(*this)
-            , space(TaskCtx<TTask>::current_task_space())
+            , space(current_space)
             , task{task}
         {
             // init properties from args

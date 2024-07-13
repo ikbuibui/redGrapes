@@ -10,7 +10,7 @@
  */
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
+#include "redGrapes/globalSpace.hpp"
 
 namespace redGrapes
 {
@@ -51,7 +51,7 @@ namespace redGrapes
         T get(void)
         {
             // wait until result is set
-            TaskCtx<TTask>::yield(task.get_result_set_event());
+            yield_impl<TTask>(task.get_result_set_event());
 
             // take result
             T result = std::move(*reinterpret_cast<T*>(task.get_result_data()));
@@ -104,7 +104,7 @@ namespace redGrapes
         void get(void)
         {
             // wait until result is set
-            TaskCtx<TTask>::yield(task.get_result_set_event());
+            yield_impl<TTask>(task.get_result_set_event());
 
             // take result
             taken = true;

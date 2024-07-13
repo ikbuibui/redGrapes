@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/TaskFreeCtx.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/resource/resource_user.hpp"
 
 #include <fmt/format.h>
@@ -25,9 +25,9 @@ namespace redGrapes
 {
 
     template<typename TTask>
-    struct ResourceProperty : ResourceUser<TTask>
+    struct ResourceProperty : ResourceUser
     {
-        ResourceProperty(WorkerId worker_id) : ResourceUser<TTask>(worker_id)
+        ResourceProperty(WorkerId worker_id, unsigned scope_depth) : ResourceUser(worker_id, scope_depth)
         {
         }
 
@@ -40,16 +40,16 @@ namespace redGrapes
             {
             }
 
-            PropertiesBuilder& resources(std::initializer_list<ResourceAccess<TTask>> list)
+            PropertiesBuilder& resources(std::initializer_list<ResourceAccess> list)
             {
-                for(ResourceAccess<TTask> const& ra : list)
+                for(ResourceAccess const& ra : list)
                     builder.task->access_list.push(ra);
                 builder.task->build_unique_resource_list();
 
                 return builder;
             }
 
-            inline PropertiesBuilder& add_resource(ResourceAccess<TTask> access)
+            inline PropertiesBuilder& add_resource(ResourceAccess access)
             {
                 (*builder.task) += access;
                 return builder;
@@ -67,7 +67,7 @@ namespace redGrapes
                 {
                 }
 
-                PatchBuilder add_resources(std::initializer_list<ResourceAccess<TTask>> list)
+                PatchBuilder add_resources(std::initializer_list<ResourceAccess> list)
                 {
                     Patch& p = builder.patch;
                     for(auto const& acc : list)
@@ -75,7 +75,7 @@ namespace redGrapes
                     return builder;
                 }
 
-                PatchBuilder remove_resources(std::initializer_list<ResourceAccess<TTask>> list)
+                PatchBuilder remove_resources(std::initializer_list<ResourceAccess> list)
                 {
                     Patch& p = builder.patch;
                     for(auto const& acc : list)
@@ -90,30 +90,30 @@ namespace redGrapes
                 REMOVE
             };
 
-            std::list<std::pair<DiffType, ResourceAccess<TTask>>> diff;
+            std::list<std::pair<DiffType, ResourceAccess>> diff;
 
             void operator+=(Patch const& other)
             {
                 this->diff.insert(std::end(this->diff), std::begin(other.diff), std::end(other.diff));
             }
 
-            void operator+=(ResourceAccess<TTask> const& ra)
+            void operator+=(ResourceAccess const& ra)
             {
                 this->diff.push_back(std::make_pair(DiffType::ADD, ra));
             }
 
-            void operator-=(ResourceAccess<TTask> const& ra)
+            void operator-=(ResourceAccess const& ra)
             {
                 this->diff.push_back(std::make_pair(DiffType::REMOVE, ra));
             }
         };
 
-        inline void operator+=(ResourceAccess<TTask> const& ra)
+        inline void operator+=(ResourceAccess const& ra)
         {
             this->add_resource_access(ra);
         }
 
-        inline void operator-=(ResourceAccess<TTask> const& ra)
+        inline void operator-=(ResourceAccess const& ra)
         {
             this->rm_resource_access(ra);
         }
@@ -121,7 +121,7 @@ namespace redGrapes
         // Only to be called inside a running task to update property
         void apply_patch(Patch const& patch)
         {
-            ResourceUser before(*this, (*TaskCtx<TTask>::current_task)->worker_id);
+            ResourceUser before(*this, static_cast<TTask*>(current_task)->worker_id);
 
             for(auto x : patch.diff)
             {
@@ -154,6 +154,6 @@ struct fmt::formatter<redGrapes::ResourceProperty<TTask>>
     template<typename FormatContext>
     auto format(redGrapes::ResourceProperty<TTask> const& label_prop, FormatContext& ctx)
     {
-        return fmt::format_to(ctx.out(), "\"resources\" : {}", (redGrapes::ResourceUser<TTask> const&) label_prop);
+        return fmt::format_to(ctx.out(), "\"resources\" : {}", (redGrapes::ResourceUser const&) label_prop);
     }
 };

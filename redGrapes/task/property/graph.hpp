@@ -12,15 +12,8 @@
 
 #include <spdlog/spdlog.h>
 
-#include <memory>
-
 namespace redGrapes
 {
-
-    // struct Task;
-    template<typename TTask>
-    struct TaskSpace;
-
     /*!
      * Each task associates with two events:
      * A Pre-Event and a Post-Event.
@@ -43,7 +36,8 @@ namespace redGrapes
     template<typename TTask>
     struct GraphProperty
     {
-        GraphProperty(WorkerId worker_id)
+        // Params workerId and scope_depth
+        GraphProperty(WorkerId worker_id, unsigned)
             : pre_event{worker_id}
             , post_event{worker_id}
             , result_set_event{worker_id}
@@ -62,12 +56,6 @@ namespace redGrapes
         }
 
         TTask* task;
-
-        //! task space that contains this task, must not be null
-        std::shared_ptr<TaskSpace<TTask>> space;
-
-        //! task space for children, may be null
-        std::shared_ptr<TaskSpace<TTask>> children;
 
         /*
         // in edges dont need a mutex because they are initialized

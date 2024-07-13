@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/dispatch/cuda/cuda_task_properties.hpp"
 #include "redGrapes/dispatch/cuda/event_pool.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/scheduler/event.hpp"
 #include "redGrapes/sync/cv.hpp"
 #include "redGrapes/task/queue.hpp"
@@ -108,7 +108,7 @@ namespace redGrapes::dispatch::cuda
             assert(task.is_ready());
             std::lock_guard<std::recursive_mutex> lock(mutex);
 
-            TaskCtx<TTask>::current_task = &task;
+            current_task = &task;
 
             // run the code that calls the CUDA API and submits work to *task->m_cuda_stream_idx
             auto event = task();
@@ -116,7 +116,7 @@ namespace redGrapes::dispatch::cuda
             cudaEvent_t cuda_event = event_pool.alloc();
             // works even if the m_cuda_stream index optional is nullopt, because it gets casted to 0
             cudaEventRecord(cuda_event, streams[*(task->m_cuda_stream_idx)].cuda_stream);
-            auto my_event = TaskCtx<TTask>::create_event();
+            auto my_event = create_event_impl<TTask>();
             events.push(std::make_pair(cuda_event, *my_event));
             SPDLOG_TRACE(
                 "CudaStreamDispatcher {}: recorded event {}",
@@ -137,7 +137,7 @@ namespace redGrapes::dispatch::cuda
             else
                 task.get_post_event().notify();
 
-            TaskCtx<TTask>::current_task = nullptr;
+            current_task = nullptr;
         }
 
         /* repeatedly try to find and execute tasks

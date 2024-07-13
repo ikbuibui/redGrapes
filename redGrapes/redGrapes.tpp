@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/TaskFreeCtx.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/redGrapes.hpp"
 #include "redGrapes/util/trace.hpp"
 
@@ -29,7 +29,8 @@ namespace redGrapes
         backtrace() const
     {
         std::vector<std::reference_wrapper<RGTask>> bt;
-        for(RGTask* task = TaskCtx<RGTask>::current_task; task != nullptr; task = task->space->parent)
+        for(auto task = static_cast<RGTask*>(current_task); task != nullptr;
+            task = static_cast<RGTask*>(task->space->parent))
             bt.push_back(*task);
 
         return bt;
@@ -63,7 +64,7 @@ namespace redGrapes
     {
         SPDLOG_TRACE("barrier");
 
-        while(!TaskCtx<RGTask>::root_space->empty())
+        while(!root_space->empty())
             TaskFreeCtx::idle();
     }
 
@@ -72,10 +73,10 @@ namespace redGrapes
     void RedGrapes<TSchedMap, TUserTaskProperties...>::update_properties(
         typename Task<TUserTaskProperties...>::TaskProperties::Patch const& patch)
     {
-        if(TaskCtx<RGTask>::current_task)
+        if(current_task)
         {
-            TaskCtx<RGTask>::current_task->apply_patch(patch);
-            TaskCtx<RGTask>::current_task->update_graph();
+            static_cast<RGTask*>(current_task)->apply_patch(patch);
+            static_cast<RGTask*>(current_task)->update_graph();
         }
         else
             throw std::runtime_error("update_properties: currently no task running");

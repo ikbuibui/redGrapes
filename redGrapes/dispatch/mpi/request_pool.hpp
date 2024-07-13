@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/scheduler/event.hpp"
 
 #include <mpi.h>
@@ -83,8 +83,8 @@ namespace redGrapes
                  */
                 MPI_Status get_status(MPI_Request request)
                 {
-                    auto status = memory::alloc_shared_bind<MPI_Status>((*TaskCtx<TTask>::current_task)->worker_id);
-                    auto event = *TaskCtx<TTask>::create_event();
+                    auto status = memory::alloc_shared_bind<MPI_Status>(static_cast<TTask*>(current_task)->worker_id);
+                    auto event = *create_event_impl<TTask>();
 
                     // SPDLOG_TRACE("MPI RequestPool: status event = {}", (void*)event.get());
 
@@ -95,7 +95,7 @@ namespace redGrapes
                         statuses.push_back(status);
                     }
 
-                    TaskCtx<TTask>::yield(event);
+                    yield_impl<TTask>(event);
 
                     return *status;
                 }
