@@ -159,7 +159,7 @@ namespace redGrapes
             // construct task in-place
             new(task) FunTask<Impl, RGTask>(worker_id, *scheduler_map[TSchedTag{}]);
 
-            return std::move(TaskBuilder<RGTask, Callable, Args...>(task, std::move(f), std::forward<Args>(args)...));
+            return TaskBuilder<RGTask, Callable, Args...>(task, std::forward<Callable>(f), std::forward<Args>(args)...);
         }
 
         template<typename Callable, typename... Args>
