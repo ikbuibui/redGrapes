@@ -103,7 +103,7 @@ namespace redGrapes
             space->submit(t);
             t->scheduler_p->emplace_task(*t);
 
-            return std::move(Future<Result, TTask>(*t));
+            return Future<Result, TTask>(*t);
         }
 
         auto get()

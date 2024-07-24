@@ -13,6 +13,6 @@ struct BindArgs
 {
     inline auto operator()(Callable&& f, Args&&... args)
     {
-        return std::move([f = std::move(f), args...]() mutable { return f(std::forward<Args>(args)...); });
+        return [f = std::move(f), args...]() mutable { return f(std::forward<Args>(args)...); };
     }
 };
