@@ -37,12 +37,12 @@ namespace redGrapes
             }
 
             //! add task to the set of to-initialize tasks
-            virtual void emplace_task(TTask& task)
+            virtual void emplace_task(TTask&)
             {
             }
 
             //! add task to ready set
-            virtual void activate_task(TTask& task)
+            virtual void activate_task(TTask&)
             {
             }
 
@@ -50,7 +50,7 @@ namespace redGrapes
             {
             }
 
-            virtual bool wake(WakerId id = 0)
+            virtual bool wake(WakerId)
             {
                 return false;
             }
@@ -61,7 +61,7 @@ namespace redGrapes
             }
 
             // initialize the execution context pointed to by the scheduler
-            virtual void init()
+            virtual void init(WorkerId)
             {
             }
 

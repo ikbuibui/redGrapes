@@ -47,7 +47,7 @@ namespace redGrapes
              *
              * @return true if thread was indeed asleep
              */
-            bool wake(WakerId id = 0);
+            bool wake(WakerId id);
 
             /* wakeup all workers
              */
