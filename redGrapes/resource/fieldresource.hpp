@@ -181,7 +181,7 @@ namespace redGrapes
 
             operator ResourceAccess() const noexcept
             {
-                return this->make_access(access::FieldAccess<dim>(access::IOAccess::read, this->m_area));
+                return this->res.make_access(access::FieldAccess<dim>(access::IOAccess::read, this->m_area));
             }
 
         protected:
@@ -249,7 +249,7 @@ namespace redGrapes
 
             operator ResourceAccess() const noexcept
             {
-                return this->make_access(access::FieldAccess<dim>(access::IOAccess::write, this->m_area));
+                return this->res.make_access(access::FieldAccess<dim>(access::IOAccess::write, this->m_area));
             }
 
         protected:

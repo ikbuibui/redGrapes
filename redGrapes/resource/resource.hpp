@@ -20,6 +20,7 @@
 #include <boost/type_index.hpp>
 #include <fmt/format.h>
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -83,47 +84,95 @@ namespace redGrapes
         }
     };
 
+    struct AccessBase
+    {
+        AccessBase(boost::typeindex::type_index access_type, std::shared_ptr<ResourceBase> resource)
+            : access_type(access_type)
+            , resource(resource)
+        {
+        }
+
+        AccessBase(AccessBase&& other) : access_type(other.access_type), resource(std::move(other.resource))
+        {
+        }
+
+        virtual ~AccessBase(){};
+        virtual bool operator==(AccessBase const& r) const = 0;
+
+        bool is_same_resource(AccessBase const& a) const
+        {
+            return this->resource == a.resource;
+        }
+
+        virtual bool is_synchronizing() const = 0;
+        virtual bool is_serial(AccessBase const& r) const = 0;
+        virtual bool is_superset_of(AccessBase const& r) const = 0;
+        virtual std::string mode_format() const = 0;
+
+        boost::typeindex::type_index access_type;
+        std::shared_ptr<ResourceBase> resource;
+    }; // AccessBase
+
+    template<typename AccessPolicy>
+    struct Access : public AccessBase
+    {
+        Access(std::shared_ptr<ResourceBase> resource, AccessPolicy policy)
+            : AccessBase(boost::typeindex::type_id<AccessPolicy>(), resource)
+            , policy(policy)
+        {
+        }
+
+        Access(Access&& other) noexcept
+            : AccessBase(std::move(std::forward<AccessBase>(other))) // TODO check this
+            , policy(std::move(other.policy))
+        {
+        }
+
+        ~Access() override = default;
+
+        bool is_synchronizing() const override
+        {
+            return policy.is_synchronizing();
+        }
+
+        bool is_serial(AccessBase const& a_) const override
+        {
+            Access const& a
+                = *static_cast<Access const*>(&a_); // no dynamic cast needed, type checked in ResourceAccess
+            return this->is_same_resource(a) && AccessPolicy::is_serial(this->policy, a.policy);
+        }
+
+        bool is_superset_of(AccessBase const& a_) const override
+        {
+            Access const& a
+                = *static_cast<Access const*>(&a_); // no dynamic cast needed, type checked in ResourceAccess
+            return this->is_same_resource(a) && this->policy.is_superset_of(a.policy);
+        }
+
+        bool operator==(AccessBase const& a_) const override
+        {
+            Access const& a
+                = *static_cast<Access const*>(&a_); // no dynamic cast needed, type checked in ResourceAccess
+
+            return (this->is_same_resource(a_) && this->policy == a.policy);
+        }
+
+        std::string mode_format() const override
+        {
+            return fmt::format("{}", policy);
+        }
+
+        AccessPolicy policy;
+    }; // struct Access
+
     class ResourceAccess
     {
-        // https://stackoverflow.com/questions/16567212/why-does-the-standard-prohibit-friend-declarations-of-partial-specializations
-        template<typename AccessPolicy>
-        friend class Resource;
-
     private:
-        struct AccessBase
-        {
-            AccessBase(boost::typeindex::type_index access_type, std::shared_ptr<ResourceBase> resource)
-                : access_type(access_type)
-                , resource(resource)
-            {
-            }
-
-            AccessBase(AccessBase&& other) : access_type(other.access_type), resource(std::move(other.resource))
-            {
-            }
-
-            virtual ~AccessBase(){};
-            virtual bool operator==(AccessBase const& r) const = 0;
-
-            bool is_same_resource(ResourceAccess::AccessBase const& a) const
-            {
-                return this->resource == a.resource;
-            }
-
-            virtual bool is_synchronizing() const = 0;
-            virtual bool is_serial(AccessBase const& r) const = 0;
-            virtual bool is_superset_of(AccessBase const& r) const = 0;
-            virtual std::string mode_format() const = 0;
-
-            boost::typeindex::type_index access_type;
-            std::shared_ptr<ResourceBase> resource;
-        }; // AccessBase
-
         // todo use allocator!!
         std::shared_ptr<AccessBase> obj;
 
     public:
-        ResourceAccess(std::shared_ptr<AccessBase> obj) : obj(obj)
+        ResourceAccess(std::shared_ptr<AccessBase> obj) : obj(std::move(obj))
         {
         }
 
@@ -142,7 +191,18 @@ namespace redGrapes
             return *this;
         }
 
-        static bool is_serial(ResourceAccess const& a, ResourceAccess const& b)
+        template<typename AccessPolicy>
+        friend ResourceAccess newAccess(ResourceAccess const& x, AccessPolicy pol)
+        {
+            assert(x.obj->access_type == boost::typeindex::type_id<AccessPolicy>());
+            auto y = redGrapes::memory::alloc_shared_bind<Access<AccessPolicy>>(
+                mapping::map_resource_to_worker(x.obj->resource->id),
+                x.obj->resource,
+                pol);
+            return ResourceAccess(y);
+        }
+
+        friend bool is_serial(ResourceAccess const& a, ResourceAccess const& b)
         {
             if(a.obj->access_type == b.obj->access_type)
                 return a.obj->is_serial(*b.obj);
@@ -206,6 +266,37 @@ namespace redGrapes
         }
     }; // class ResourceAccess
 
+    template<typename AccessPolicy>
+    ResourceAccess newAccess(ResourceAccess const& x, AccessPolicy pol);
+
+    bool is_serial(ResourceAccess const& a, ResourceAccess const& b);
+
+    template<typename T>
+    struct ResourceAccessPair : public std::pair<std::shared_ptr<T>, ResourceAccess>
+    {
+        using std::pair<std::shared_ptr<T>, ResourceAccess>::pair;
+
+        operator ResourceAccess() const
+        {
+            return this->second;
+        }
+
+        auto& operator*() const noexcept
+        {
+            return *(this->first);
+        }
+
+        auto* operator->() const noexcept
+        {
+            return this->first.get();
+        }
+
+        auto* get() const noexcept
+        {
+            return this->first.get();
+        }
+    };
+
     namespace trait
     {
 
@@ -266,60 +357,6 @@ namespace redGrapes
     class Resource
     {
     protected:
-        struct Access : public ResourceAccess::AccessBase
-        {
-            Access(std::shared_ptr<ResourceBase> resource, AccessPolicy policy)
-                : ResourceAccess::AccessBase(boost::typeindex::type_id<AccessPolicy>(), resource)
-                , policy(policy)
-            {
-            }
-
-            Access(Access&& other)
-                : ResourceAccess::AccessBase(
-                      std::move(std::forward<ResourceAccess::AccessBase>(other))) // TODO check this
-                , policy(std::move(other.policy))
-            {
-            }
-
-            ~Access()
-            {
-            }
-
-            bool is_synchronizing() const override
-            {
-                return policy.is_synchronizing();
-            }
-
-            bool is_serial(typename ResourceAccess::AccessBase const& a_) const override
-            {
-                Access const& a
-                    = *static_cast<Access const*>(&a_); // no dynamic cast needed, type checked in ResourceAccess
-                return this->is_same_resource(a) && AccessPolicy::is_serial(this->policy, a.policy);
-            }
-
-            bool is_superset_of(typename ResourceAccess::AccessBase const& a_) const override
-            {
-                Access const& a
-                    = *static_cast<Access const*>(&a_); // no dynamic cast needed, type checked in ResourceAccess
-                return this->is_same_resource(a) && this->policy.is_superset_of(a.policy);
-            }
-
-            bool operator==(typename ResourceAccess::AccessBase const& a_) const override
-            {
-                Access const& a
-                    = *static_cast<Access const*>(&a_); // no dynamic cast needed, type checked in ResourceAccess
-
-                return (this->is_same_resource(a_) && this->policy == a.policy);
-            }
-
-            std::string mode_format() const
-            {
-                return fmt::format("{}", policy);
-            }
-
-            AccessPolicy policy;
-        }; // struct ThisResourceAccess
-
         std::shared_ptr<ResourceBase> base;
 
     public:
@@ -338,8 +375,10 @@ namespace redGrapes
          */
         ResourceAccess make_access(AccessPolicy pol) const
         {
-            auto a
-                = redGrapes::memory::alloc_shared_bind<Access>(mapping::map_resource_to_worker(base->id), base, pol);
+            auto a = redGrapes::memory::alloc_shared_bind<Access<AccessPolicy>>(
+                mapping::map_resource_to_worker(base->id),
+                base,
+                pol);
             return ResourceAccess(a);
         }
 
@@ -352,36 +391,36 @@ namespace redGrapes
     }; // class Resource
 
     template<typename T, typename AccessPolicy>
-    struct SharedResourceObject : Resource<AccessPolicy>
+    struct SharedResourceObject
     {
-        // protected:
-        std::shared_ptr<T> obj;
-
-        SharedResourceObject(ResourceId id, std::shared_ptr<T> const& obj) : Resource<AccessPolicy>(id), obj(obj)
+        SharedResourceObject(ResourceId id, std::shared_ptr<T> const& obj) : res{id}, obj(obj)
         {
         }
 
         template<typename... Args>
         SharedResourceObject(ResourceId id, Args&&... args)
-            : Resource<AccessPolicy>(id)
+            : res{id}
             , obj{memory::alloc_shared_bind<T>(mapping::map_resource_to_worker(id), std::forward<Args>(args)...)}
         {
         }
 
-        SharedResourceObject(Resource<AccessPolicy> const& res, std::shared_ptr<T> const& obj)
-            : Resource<AccessPolicy>{res}
-            , obj{obj}
+        SharedResourceObject(Resource<AccessPolicy> const& res, std::shared_ptr<T> const& obj) : res{res}, obj{obj}
         {
         }
 
         template<typename... Args>
         SharedResourceObject(Resource<AccessPolicy> const& res, Args&&... args)
-            : Resource<AccessPolicy>{res}
+            : res{res}
             , obj{memory::alloc_shared_bind<T>(
                   mapping::map_resource_to_worker(res.resource_id()),
                   std::forward<Args>(args)...)}
         {
         }
+
+    protected:
+        Resource<AccessPolicy> res;
+        std::shared_ptr<T> obj;
+
 
     }; // struct SharedResourceObject
 

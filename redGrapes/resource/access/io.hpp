@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <fmt/format.h>
 
 namespace redGrapes
@@ -22,7 +23,7 @@ namespace redGrapes
          */
         struct IOAccess
         {
-            enum Mode
+            enum Mode : uint8_t
             {
                 write,
                 read,

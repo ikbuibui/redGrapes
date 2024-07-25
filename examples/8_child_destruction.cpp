@@ -30,14 +30,22 @@ int main()
                       *a = 2;
                       std::cout << "scope = " << rg.scope_depth() << " a = " << *a << std::endl;
                   },
-                  a.write());
+                  a);
               rg.emplace_task(
                   [&rg](auto a)
                   {
                       *a = 3;
                       std::cout << "scope = " << rg.scope_depth() << " a = " << *a << std::endl;
+                      auto b = redGrapes::IOResource(a.first);
+                      rg.emplace_task(
+                          [&rg](auto b)
+                          {
+                              std::cout << "scope = " << rg.scope_depth() << " a = " << *b << std::endl;
+                              *b = 4;
+                          },
+                          b.write());
                   },
-                  a.write());
+                  a);
 
               *a = 4;
               std::cout << "scope = " << rg.scope_depth() << " a = " << *a << std::endl;

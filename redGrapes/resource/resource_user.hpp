@@ -68,7 +68,7 @@ namespace redGrapes
         void add_resource_access(ResourceAccess ra)
         {
             this->access_list.push(ra);
-            std::shared_ptr<ResourceBase> r = ra.get_resource();
+            const std::shared_ptr<ResourceBase>& r = ra.get_resource();
             unique_resources.push(ResourceUsageEntry{r, r->users.rend()});
         }
 
@@ -81,7 +81,7 @@ namespace redGrapes
         {
             for(auto ra = access_list.rbegin(); ra != access_list.rend(); ++ra)
             {
-                std::shared_ptr<ResourceBase> r = ra->get_resource();
+                const std::shared_ptr<ResourceBase>& r = ra->get_resource();
                 unique_resources.erase(ResourceUsageEntry{r, r->users.rend()});
                 unique_resources.push(ResourceUsageEntry{r, r->users.rend()});
             }
@@ -121,7 +121,7 @@ namespace redGrapes
                 for(auto rb = b.access_list.crbegin(); rb != b.access_list.crend(); ++rb)
                 {
                     TRACE_EVENT("ResourceUser", "RA::is_serial");
-                    if(ResourceAccess::is_serial(*ra, *rb))
+                    if(is_serial(*ra, *rb))
                         return true;
                 }
             return false;
