@@ -240,9 +240,10 @@ namespace redGrapes
             return this->obj->mode_format();
         }
 
-        std::shared_ptr<ResourceBase> get_resource()
+        // Doesn't share ownership
+        ResourceBase* get_resource_ptr() const
         {
-            return obj->resource;
+            return (obj->resource).get();
         }
 
         /**

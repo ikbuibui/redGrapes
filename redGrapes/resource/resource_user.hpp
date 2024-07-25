@@ -27,9 +27,11 @@ namespace redGrapes
 
     struct TaskSpace;
 
+    // unique_resources - list of ResourceUsageEntry Doesnt own Resource Base.
+    // access_list - list of ResourceAccess is responsible for resource base lifetime
     struct ResourceUsageEntry
     {
-        std::shared_ptr<ResourceBase> resource;
+        ResourceBase* resource;
         typename ChunkedList<ResourceUser*, REDGRAPES_RUL_CHUNKSIZE>::MutBackwardIterator user_entry;
 
         friend bool operator==(ResourceUsageEntry const& a, ResourceUsageEntry const& b)
@@ -65,14 +67,14 @@ namespace redGrapes
                 add_resource_access(ra);
         }
 
-        void add_resource_access(ResourceAccess ra)
+        void add_resource_access(ResourceAccess const& ra)
         {
             this->access_list.push(ra);
-            const std::shared_ptr<ResourceBase>& r = ra.get_resource();
+            auto* r = ra.get_resource_ptr();
             unique_resources.push(ResourceUsageEntry{r, r->users.rend()});
         }
 
-        void rm_resource_access(ResourceAccess ra)
+        void rm_resource_access(ResourceAccess const& ra)
         {
             this->access_list.erase(ra);
         }
@@ -81,17 +83,17 @@ namespace redGrapes
         {
             for(auto ra = access_list.rbegin(); ra != access_list.rend(); ++ra)
             {
-                const std::shared_ptr<ResourceBase>& r = ra->get_resource();
+                auto* r = ra->get_resource_ptr();
                 unique_resources.erase(ResourceUsageEntry{r, r->users.rend()});
                 unique_resources.push(ResourceUsageEntry{r, r->users.rend()});
             }
         }
 
-        bool has_sync_access(std::shared_ptr<ResourceBase> const& res)
+        bool has_sync_access(ResourceBase* res)
         {
             for(auto ra = access_list.rbegin(); ra != access_list.rend(); ++ra)
             {
-                if(ra->get_resource() == res && ra->is_synchronizing())
+                if(ra->get_resource_ptr() == res && ra->is_synchronizing())
                     return true;
             }
             return false;
