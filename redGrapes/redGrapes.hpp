@@ -190,7 +190,7 @@ namespace redGrapes
         }
 
         template<typename T>
-        auto createIOResource(std::shared_ptr<T> o) -> IOResource<T>
+        auto createIOResource(std::shared_ptr<T> const& o) -> IOResource<T>
         {
             return IOResource<T>(o);
         }

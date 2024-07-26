@@ -288,7 +288,7 @@ namespace redGrapes
         static constexpr size_t dim = trait::Field<Container>::dim;
 
         FieldResource(Container* c)
-            : fieldresource::WriteGuard<Container>(TaskFreeCtx::create_resource_uid(), std::shared_ptr<Container>(c))
+            : fieldresource::WriteGuard<Container>(TaskFreeCtx::create_resource_uid(), std::make_shared<Container>(c))
         {
         }
 
@@ -304,7 +304,7 @@ namespace redGrapes
 
         template<typename U>
         FieldResource(FieldResource<U> const& res, Container* c)
-            : fieldresource::WriteGuard<Container>(res, std::shared_ptr<Container>(c))
+            : fieldresource::WriteGuard<Container>(res, std::make_shared<Container>(c))
         {
         }
 

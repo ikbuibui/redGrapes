@@ -33,7 +33,7 @@ namespace redGrapes
             }
 
             ThreadScheduler(std::shared_ptr<dispatch::thread::WorkerThread<Worker>> workerThread)
-                : m_worker_thread(workerThread)
+                : m_worker_thread(std::move(workerThread))
             {
             }
 

@@ -88,7 +88,7 @@ namespace redGrapes
     {
         AccessBase(boost::typeindex::type_index access_type, std::shared_ptr<ResourceBase> resource)
             : access_type(access_type)
-            , resource(resource)
+            , resource(std::move(resource))
         {
         }
 
@@ -116,7 +116,7 @@ namespace redGrapes
     template<typename AccessPolicy>
     struct Access : public AccessBase
     {
-        Access(std::shared_ptr<ResourceBase> resource, AccessPolicy policy)
+        Access(std::shared_ptr<ResourceBase> const& resource, AccessPolicy policy)
             : AccessBase(boost::typeindex::type_id<AccessPolicy>(), resource)
             , policy(policy)
         {
@@ -394,7 +394,7 @@ namespace redGrapes
     template<typename T, typename AccessPolicy>
     struct SharedResourceObject
     {
-        SharedResourceObject(ResourceId id, std::shared_ptr<T> const& obj) : res{id}, obj(obj)
+        SharedResourceObject(ResourceId id, std::shared_ptr<T> obj) : res{id}, obj(std::move(obj))
         {
         }
 
@@ -405,7 +405,7 @@ namespace redGrapes
         {
         }
 
-        SharedResourceObject(Resource<AccessPolicy> const& res, std::shared_ptr<T> const& obj) : res{res}, obj{obj}
+        SharedResourceObject(Resource<AccessPolicy> const& res, std::shared_ptr<T> obj) : res{res}, obj{std::move(obj)}
         {
         }
 
