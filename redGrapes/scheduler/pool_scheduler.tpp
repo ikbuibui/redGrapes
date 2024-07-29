@@ -84,11 +84,13 @@ namespace redGrapes
                 worker_id = next_worker.fetch_add(1) % n_workers;
                 if(worker_id == *TaskFreeCtx::current_worker_id)
                     worker_id = next_worker.fetch_add(1) % n_workers;
+                m_worker_pool.get_worker_thread(worker_id).worker.ready_queue.push(&task);
             }
-
-            m_worker_pool.get_worker_thread(worker_id).worker.ready_queue.push(&task);
-            m_worker_pool.set_worker_state(worker_id, dispatch::thread::WorkerState::BUSY);
-            m_worker_pool.get_worker_thread(worker_id).worker.wake();
+            else
+            {
+                m_worker_pool.get_worker_thread(worker_id).worker.ready_queue.push(&task);
+                m_worker_pool.get_worker_thread(worker_id).worker.wake();
+            }
         }
 
         /* Wakeup some worker or the main thread
