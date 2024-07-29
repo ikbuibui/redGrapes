@@ -11,8 +11,9 @@
 
 #pragma once
 
-#include <cstdint>
 #include <fmt/format.h>
+
+#include <cstdint>
 
 namespace redGrapes
 {

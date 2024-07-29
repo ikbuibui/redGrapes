@@ -22,34 +22,12 @@
 
 namespace redGrapes
 {
-    namespace ioresource
-    {
-
-        template<typename T>
-        struct Guards : public SharedResourceObject<T, access::IOAccess>
-        {
-            auto read() const noexcept
-            {
-                return ResourceAccessPair<T const>{this->obj, this->res.make_access(access::IOAccess::read)};
-            }
-
-            auto write() const noexcept
-            {
-                return ResourceAccessPair<T>{this->obj, this->res.make_access(access::IOAccess::write)};
-            }
-
-
-        protected:
-            using SharedResourceObject<T, access::IOAccess>::SharedResourceObject;
-        };
-
-
-    } // namespace ioresource
 
     template<typename T>
-    struct IOResource : public ioresource::Guards<T>
+    struct IOResource : public SharedResourceObject<T, access::IOAccess>
     {
-        IOResource(std::shared_ptr<T> const& o) : ioresource::Guards<T>(TaskFreeCtx::create_resource_uid(), o)
+        IOResource(std::shared_ptr<T> const& o)
+            : SharedResourceObject<T, access::IOAccess>(TaskFreeCtx::create_resource_uid(), o)
         {
         }
 
@@ -58,17 +36,21 @@ namespace redGrapes
             !(traits::is_specialization_of_v<std::decay_t<traits::first_type_t<Args...>>, IOResource>
               || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, std::shared_ptr<T>>) )
         IOResource(Args&&... args)
-            : ioresource::Guards<T>(TaskFreeCtx::create_resource_uid(), std::forward<Args>(args)...)
+            : SharedResourceObject<T, access::IOAccess>(
+                  TaskFreeCtx::create_resource_uid(),
+                  std::forward<Args>(args)...)
         {
         }
 
         template<typename U>
-        IOResource(IOResource<U> const& res, std::shared_ptr<T> const& obj) : ioresource::Guards<T>(res, obj)
+        IOResource(IOResource<U> const& res, std::shared_ptr<T> const& obj)
+            : SharedResourceObject<T, access::IOAccess>(res, obj)
         {
         }
 
         template<typename U, typename... Args>
-        IOResource(IOResource<U> const& res, Args&&... args) : ioresource::Guards<T>(res, std::forward<Args>(args)...)
+        IOResource(IOResource<U> const& res, Args&&... args)
+            : SharedResourceObject<T, access::IOAccess>(res, std::forward<Args>(args)...)
         {
         }
 

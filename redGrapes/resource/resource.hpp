@@ -418,6 +418,17 @@ namespace redGrapes
         {
         }
 
+        auto read() const noexcept
+        {
+            return ResourceAccessPair<T const>{obj, res.make_access(AccessPolicy::read)};
+        }
+
+        auto write() const noexcept
+        {
+            return ResourceAccessPair<T>{obj, res.make_access(AccessPolicy::write)};
+        }
+
+
     protected:
         Resource<AccessPolicy> res;
         std::shared_ptr<T> obj;
