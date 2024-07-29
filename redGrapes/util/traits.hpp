@@ -15,6 +15,10 @@ namespace redGrapes::traits
     {
     };
 
+    // Variable template for is_specialization_of
+    template<typename T, template<typename...> class Template>
+    inline constexpr bool is_specialization_of_v = is_specialization_of<T, Template>::value;
+
     template<typename T = std::false_type, typename...>
     struct first_type
     {

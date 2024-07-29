@@ -294,7 +294,7 @@ namespace redGrapes
 
         template<typename... Args>
         requires(
-            !(traits::is_specialization_of<std::decay_t<traits::first_type_t<Args...>>, FieldResource>::value
+            !(traits::is_specialization_of_v<std::decay_t<traits::first_type_t<Args...>>, FieldResource>
               || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, Container*>) )
 
         FieldResource(Args&&... args)
