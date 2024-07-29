@@ -55,24 +55,24 @@ namespace redGrapes
 
         protected:
             ReadGuard(ResourceId id, std::shared_ptr<T> const& obj)
-                : SharedResourceObject<T,  access::IOAccess>(id, obj)
+                : SharedResourceObject<T, access::IOAccess>(id, obj)
             {
             }
 
             template<typename... Args>
             ReadGuard(ResourceId id, Args&&... args)
-                : SharedResourceObject<T,  access::IOAccess>(id, std::forward<Args>(args)...)
+                : SharedResourceObject<T, access::IOAccess>(id, std::forward<Args>(args)...)
             {
             }
 
-            ReadGuard(Resource< access::IOAccess> const& res, std::shared_ptr<T> const& obj)
-                : SharedResourceObject<T,  access::IOAccess>(res, obj)
+            ReadGuard(Resource<access::IOAccess> const& res, std::shared_ptr<T> const& obj)
+                : SharedResourceObject<T, access::IOAccess>(res, obj)
             {
             }
 
             template<typename... Args>
-            ReadGuard(Resource< access::IOAccess> const& res, Args&&... args)
-                : SharedResourceObject<T,  access::IOAccess>(res, std::forward<Args>(args)...)
+            ReadGuard(Resource<access::IOAccess> const& res, Args&&... args)
+                : SharedResourceObject<T, access::IOAccess>(res, std::forward<Args>(args)...)
             {
             }
         };
@@ -115,13 +115,12 @@ namespace redGrapes
             {
             }
 
-            WriteGuard(Resource< access::IOAccess> const& res, std::shared_ptr<T> const& obj)
-                : ReadGuard<T>(res, obj)
+            WriteGuard(Resource<access::IOAccess> const& res, std::shared_ptr<T> const& obj) : ReadGuard<T>(res, obj)
             {
             }
 
             template<typename... Args>
-            WriteGuard(Resource< access::IOAccess> const& res, Args&&... args)
+            WriteGuard(Resource<access::IOAccess> const& res, Args&&... args)
                 : ReadGuard<T>(res, std::forward<Args>(args)...)
             {
             }
@@ -132,14 +131,13 @@ namespace redGrapes
     template<typename T>
     struct IOResource : public ioresource::WriteGuard<T>
     {
-        IOResource(std::shared_ptr<T> const& o)
-            : ioresource::WriteGuard<T>(TaskFreeCtx::create_resource_uid(), o)
+        IOResource(std::shared_ptr<T> const& o) : ioresource::WriteGuard<T>(TaskFreeCtx::create_resource_uid(), o)
         {
         }
 
         template<typename... Args>
         requires(
-            !(traits::is_specialization_of<std::decay_t<traits::first_type_t<Args...>>, IOResource>::value
+            !(traits::is_specialization_of_v<std::decay_t<traits::first_type_t<Args...>>, IOResource>
               || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, std::shared_ptr<T>>) )
         IOResource(Args&&... args)
             : ioresource::WriteGuard<T>(TaskFreeCtx::create_resource_uid(), std::forward<Args>(args)...)
@@ -147,8 +145,7 @@ namespace redGrapes
         }
 
         template<typename U>
-        IOResource(IOResource<U> const& res, std::shared_ptr<T> const& obj)
-            : ioresource::WriteGuard<T>(res, obj)
+        IOResource(IOResource<U> const& res, std::shared_ptr<T> const& obj) : ioresource::WriteGuard<T>(res, obj)
         {
         }
 
