@@ -63,22 +63,22 @@ namespace redGrapes
                 }
             }
 
-            should_wait.store(true);
+            should_wait.store(true, std::memory_order_release);
         }
 
         bool notify()
         {
-            bool w = true;
-            should_wait.compare_exchange_strong(w, false, std::memory_order_release);
-
-            // TODO: check this optimization
-            // if( ! busy.test_and_set(std::memory_order_acquire) )
+            bool expected = true;
+            if(should_wait
+                   .compare_exchange_strong(expected, false, std::memory_order_release, std::memory_order_relaxed))
             {
-                std::unique_lock<std::mutex> l(m);
+                // TODO: check this optimization
+                // if( ! busy.test_and_set(std::memory_order_acquire) )
+                std::unique_lock<CVMutex> l(m);
                 cv.notify_all();
+                return true;
             }
-
-            return w;
+            return false;
         }
     };
 
