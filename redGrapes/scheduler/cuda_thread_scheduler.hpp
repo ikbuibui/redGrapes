@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/dispatch/cuda/cuda_worker.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/scheduler/thread_scheduler.hpp"
 
 #include <atomic>
@@ -84,7 +84,7 @@ namespace redGrapes
             {
                 static std::atomic_uint stream_idx = 0;
                 auto task_stream_idx = stream_idx.fetch_add(1) % num_streams;
-                TaskCtx<TTask>::current_task->m_cuda_stream_idx = task_stream_idx;
+                static_cast<TTask*>(current_task)->m_cuda_stream_idx = task_stream_idx;
                 return this->m_worker_thread->worker.streams[task_stream_idx].cuda_stream;
             }
         };

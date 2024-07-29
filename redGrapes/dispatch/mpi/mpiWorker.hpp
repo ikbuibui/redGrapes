@@ -8,6 +8,7 @@
 #pragma once
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/dispatch/mpi/request_pool.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/sync/cv.hpp"
 #include "redGrapes/task/queue.hpp"
 
@@ -75,7 +76,7 @@ namespace redGrapes
                     assert(task.is_ready());
 
                     task.get_pre_event().notify();
-                    TaskCtx<TTask>::current_task = &task;
+                    current_task = &task;
 
                     auto event = task();
 
@@ -90,7 +91,7 @@ namespace redGrapes
                     else
                         task.get_post_event().notify();
 
-                    TaskCtx<TTask>::current_task = nullptr;
+                    current_task = nullptr;
                 }
 
                 /* find a task that shall be executed next

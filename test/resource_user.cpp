@@ -8,15 +8,14 @@
 TEST_CASE("Resource User")
 {
     auto rg = redGrapes::init(1);
-    using RGTask = decltype(rg)::RGTask;
 
-    redGrapes::IOResource<int, RGTask> a, b;
+    redGrapes::IOResource<int> a, b;
 
-    redGrapes::ResourceUser<RGTask> f1({a.read()}, 0);
-    redGrapes::ResourceUser<RGTask> f2({a.read(), a.write()}, 0);
-    redGrapes::ResourceUser<RGTask> f3({b.read()}, 0);
-    redGrapes::ResourceUser<RGTask> f4({b.read(), b.write()}, 0);
-    redGrapes::ResourceUser<RGTask> f5({a.read(), a.write(), b.read(), b.write()}, 0);
+    redGrapes::ResourceUser f1({a.read()}, 0, 0);
+    redGrapes::ResourceUser f2({a.read(), a.write()}, 0, 0);
+    redGrapes::ResourceUser f3({b.read()}, 0, 0);
+    redGrapes::ResourceUser f4({b.read(), b.write()}, 0, 0);
+    redGrapes::ResourceUser f5({a.read(), a.write(), b.read(), b.write()}, 0, 0);
 
     REQUIRE(is_serial(f1, f1) == false);
     REQUIRE(is_serial(f1, f2) == true);

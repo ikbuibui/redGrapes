@@ -102,10 +102,9 @@ TEST_CASE("RandomGraph")
 
     generate_access_pattern();
 
-    using TTask = redGrapes::Task<>;
     auto rg = redGrapes::init(n_threads);
     {
-        std::vector<redGrapes::IOResource<std::array<uint64_t, 8>, TTask>> resources(n_resources);
+        std::vector<redGrapes::IOResource<std::array<uint64_t, 8>>> resources(n_resources);
 
         for(unsigned i = 0; i < n_tasks; ++i)
             switch(access_pattern[i].size())

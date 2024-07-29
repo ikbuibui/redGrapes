@@ -93,8 +93,8 @@ int main()
     size_t height = 4096;
     size_t area = width * height;
 
-    redGrapes::IOResource<Color*, RGTask> host_buffer;
-    redGrapes::IOResource<Color*, RGTask> device_buffer;
+    redGrapes::IOResource<Color*> host_buffer;
+    redGrapes::IOResource<Color*> device_buffer;
 
     rg.emplace_task(
         [area](auto host_buffer)

@@ -6,9 +6,9 @@
  */
 #pragma once
 
-#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/dispatch/thread/DefaultWorker.hpp"
 #include "redGrapes/dispatch/thread/worker_pool.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/util/bitfield.hpp"
 #include "redGrapes/util/trace.hpp"
 
@@ -58,7 +58,7 @@ namespace redGrapes
                 assert(task.is_ready());
 
                 task.get_pre_event().notify();
-                TaskCtx<TTask>::current_task = &task;
+                current_task = &task;
 
                 auto event = task();
 
@@ -73,7 +73,7 @@ namespace redGrapes
                 else
                     task.get_post_event().notify();
 
-                TaskCtx<TTask>::current_task = nullptr;
+                current_task = nullptr;
             }
 
             template<typename TTask>

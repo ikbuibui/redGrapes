@@ -9,6 +9,7 @@
 
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/memory/block.hpp"
+#include "redGrapes/resource/resource_user.hpp"
 #include "redGrapes/task/property/id.hpp"
 #include "redGrapes/util/trace.hpp"
 
@@ -20,12 +21,11 @@ namespace redGrapes
 
     /*! TaskSpace handles sub-taskspaces of child tasks
      */
-    template<typename TTask>
-    struct TaskSpace : std::enable_shared_from_this<TaskSpace<TTask>>
+    struct TaskSpace : std::enable_shared_from_this<TaskSpace>
     {
         std::atomic<TaskID> task_count;
         unsigned depth;
-        TTask* parent;
+        ResourceUser* parent;
 
         // top space
         TaskSpace() : task_count(0), depth(0), parent(nullptr)
@@ -33,12 +33,17 @@ namespace redGrapes
         }
 
         // sub space
-
-        TaskSpace(TTask* parent) : task_count(0), depth(parent->space->depth + 1), parent(parent)
+        template<typename TTask>
+        requires std::is_base_of_v<ResourceUser, TTask>
+        TaskSpace(TTask* parent) : task_count(0)
+                                 , depth(parent->space->depth + 1)
+                                 , parent(parent)
         {
         }
 
         // add a new task to the task-space
+        template<typename TTask>
+        requires std::is_base_of_v<ResourceUser, TTask>
         void submit(TTask* task)
         {
             TRACE_EVENT("TaskSpace", "submit()");
@@ -52,16 +57,18 @@ namespace redGrapes
                 assert(parent->is_superset_of(*task));
                 // add dependency to parent
                 SPDLOG_TRACE("add event dep to parent");
-                task->post_event.add_follower(parent->get_post_event());
+                task->post_event.add_follower(static_cast<TTask*>(parent)->get_post_event());
             }
 
             for(auto r = task->unique_resources.rbegin(); r != task->unique_resources.rend(); ++r)
             {
-                r->task_entry = r->resource->users.push(task);
+                r->user_entry = r->resource->users.push(task);
             }
         }
 
         // remove task from task-space
+        template<typename TTask>
+        requires std::is_base_of_v<ResourceUser, TTask> && std::is_base_of_v<ResourceUser, TTask>
         void free_task(TTask* task)
         {
             TRACE_EVENT("TaskSpace", "free_task()");
@@ -80,7 +87,7 @@ namespace redGrapes
             // SPDLOG_INFO("kill task... {} remaining", count);
 
             // to wake after barrier the check tells us that the root space is empty
-            // if(TaskCtx<TTask>::root_space->empty()) cant be written because TaskCtx include root space
+            // if(all_tasks_done())
             if(count == 0 && depth == 0)
             {
                 SPDLOG_TRACE("Wake up parser due to free task and no more tasks");

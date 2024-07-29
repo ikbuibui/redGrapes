@@ -10,7 +10,6 @@
 #include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/memory/hwloc_alloc.hpp"
 
-#include <memory>
 #include <optional>
 #include <thread>
 
@@ -26,7 +25,8 @@ namespace redGrapes::dispatch::thread
         Worker worker;
 
         template<typename... Args>
-        WorkerThread(hwloc_obj_t const obj, Args&&... args) : obj{obj}, worker{std::forward<Args>(args)...}
+        WorkerThread(hwloc_obj_t const obj, Args&&... args) : obj{obj}
+                                                            , worker{std::forward<Args>(args)...}
         {
         }
 

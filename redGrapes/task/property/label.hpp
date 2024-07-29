@@ -25,7 +25,8 @@ namespace redGrapes
         // TODO Optimization, use the workerId to allocate the label string seperate from the task
         // using string = std::basic_string<char, std::char_traits<char>, memory::StdAllocator<char>>;
 
-        LabelProperty(WorkerId)
+        // Params workerId and scope_depth
+        LabelProperty(WorkerId, unsigned)
         {
         }
 

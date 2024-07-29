@@ -25,7 +25,9 @@ namespace redGrapes
         : T_Head
         , TaskPropertiesInherit<T_Tail...>
     {
-        TaskPropertiesInherit(WorkerId worker_id) :T_Head(worker_id), TaskPropertiesInherit<T_Tail...>(worker_id)
+        TaskPropertiesInherit(WorkerId worker_id, unsigned scope_depth)
+            : T_Head(worker_id, scope_depth)
+            , TaskPropertiesInherit<T_Tail...>(worker_id, scope_depth)
         {
         }
 
@@ -70,7 +72,8 @@ namespace redGrapes
     template<>
     struct TaskPropertiesInherit<PropEnd_t>
     {
-        TaskPropertiesInherit(WorkerId)
+        // Params workerId and scope_depth
+        TaskPropertiesInherit(WorkerId, unsigned)
         {
         }
 
@@ -101,7 +104,8 @@ namespace redGrapes
     template<typename... Policies>
     struct TaskProperties1 : public TaskPropertiesInherit<Policies..., PropEnd_t>
     {
-        TaskProperties1(WorkerId worker_id) : TaskPropertiesInherit<Policies..., PropEnd_t>(worker_id)
+        TaskProperties1(WorkerId worker_id, unsigned scope_depth)
+            : TaskPropertiesInherit<Policies..., PropEnd_t>(worker_id, scope_depth)
         {
         }
 

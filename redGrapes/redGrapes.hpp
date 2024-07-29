@@ -8,9 +8,8 @@
 #pragma once
 
 #include "redGrapes/SchedulerDescription.hpp"
-#include "redGrapes/TaskCtx.hpp"
 #include "redGrapes/TaskFreeCtx.hpp"
-#include "redGrapes/memory/hwloc_alloc.hpp"
+#include "redGrapes/globalSpace.hpp"
 #include "redGrapes/resource/fieldresource.hpp"
 #include "redGrapes/resource/ioresource.hpp"
 #include "redGrapes/scheduler/event.hpp"
@@ -56,7 +55,7 @@ namespace redGrapes
 
             TaskFreeCtx::worker_alloc_pool.allocs.reserve(TaskFreeCtx::n_workers);
 
-            TaskCtx<RGTask>::root_space = std::make_shared<TaskSpace<RGTask>>();
+            root_space = std::make_shared<TaskSpace>();
 
             auto initAdd = [](auto scheduler, auto& base_worker_id)
             {
@@ -80,7 +79,7 @@ namespace redGrapes
                 [&](auto pair) { scheduler_map[boost::mp11::mp_first<decltype(pair)>{}]->stopExecution(); });
             boost::mp11::mp_for_each<TSchedMap>([&](auto pair)
                                                 { scheduler_map[boost::mp11::mp_first<decltype(pair)>{}].reset(); });
-            TaskCtx<RGTask>::root_space.reset();
+            root_space.reset();
 
             finalize_tracing();
         }
@@ -95,7 +94,7 @@ namespace redGrapes
         //  TODO make this generic template<typename TEventPtr>
         void yield(scheduler::EventPtr<RGTask> event)
         {
-            TaskCtx<RGTask>::yield(event);
+            yield_impl<RGTask>(event);
         }
 
         //! apply a patch to the properties of the currently running task
@@ -113,17 +112,12 @@ namespace redGrapes
          */
         std::optional<scheduler::EventPtr<RGTask>> create_event()
         {
-            return TaskCtx<RGTask>::create_event();
+            return create_event_impl<RGTask>();
         }
 
         unsigned scope_depth() const
         {
-            return TaskCtx<RGTask>::scope_depth();
-        }
-
-        std::shared_ptr<TaskSpace<RGTask>> current_task_space() const
-        {
-            return TaskCtx<RGTask>::current_task_space();
+            return scope_depth_impl();
         }
 
         /*! create a new task, as child of the currently running task (if there is one)
@@ -157,9 +151,13 @@ namespace redGrapes
                 throw std::bad_alloc();
 
             // construct task in-place
-            new(task) FunTask<Impl, RGTask>(worker_id, *scheduler_map[TSchedTag{}]);
+            new(task) FunTask<Impl, RGTask>(worker_id, scope_depth_impl(), *scheduler_map[TSchedTag{}]);
 
-            return TaskBuilder<RGTask, Callable, Args...>(task, std::forward<Callable>(f), std::forward<Args>(args)...);
+            return TaskBuilder<RGTask, Callable, Args...>(
+              task,
+              current_task_space(),
+              std::forward<Callable>(f),
+              std::forward<Args>(args)...);
         }
 
         template<typename Callable, typename... Args>
@@ -180,37 +178,38 @@ namespace redGrapes
         }
 
         template<typename Container>
-        auto createFieldResource(Container* c) -> FieldResource<Container, RGTask>
+        auto createFieldResource(Container* c) -> FieldResource<Container>
         {
-            return FieldResource<Container, RGTask>(c);
+            return FieldResource<Container>(c);
         }
 
         template<typename Container, typename... Args>
-        auto createFieldResource(Args&&... args) -> FieldResource<Container, RGTask>
+        auto createFieldResource(Args&&... args) -> FieldResource<Container>
         {
-            return FieldResource<Container, RGTask>(std::forward<Args>(args)...);
+            return FieldResource<Container>(std::forward<Args>(args)...);
         }
 
         template<typename T>
-        auto createIOResource(std::shared_ptr<T> o) -> IOResource<T, RGTask>
+        auto createIOResource(std::shared_ptr<T> o) -> IOResource<T>
         {
-            return IOResource<T, RGTask>(o);
+            return IOResource<T>(o);
         }
 
         template<typename T, typename... Args>
-        auto createIOResource(Args&&... args) -> IOResource<T, RGTask>
+        auto createIOResource(Args&&... args) -> IOResource<T>
         {
-            return IOResource<T, RGTask>(std::forward<Args>(args)...);
+            return IOResource<T>(std::forward<Args>(args)...);
         }
 
         template<typename AccessPolicy>
-        auto createResource() -> Resource<RGTask, AccessPolicy>
+        auto createResource() -> Resource<AccessPolicy>
         {
-            return Resource<RGTask, AccessPolicy>(TaskFreeCtx::create_resource_uid());
+            return Resource<AccessPolicy>(TaskFreeCtx::create_resource_uid());
         }
 
     private:
         MapTuple<TSchedMap> scheduler_map;
+
 #if REDGRAPES_ENABLE_TRACE
         std::shared_ptr<perfetto::TracingSession> tracing_session;
 #endif

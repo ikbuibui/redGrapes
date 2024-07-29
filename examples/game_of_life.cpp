@@ -53,8 +53,7 @@ int main(int, char*[])
 
     using Buffer = std::array<std::array<Cell, size.x + 2>, size.y + 2>;
 
-    using TaskType = decltype(rg)::RGTask;
-    std::vector<redGrapes::FieldResource<Buffer, TaskType>> buffers;
+    std::vector<redGrapes::FieldResource<Buffer>> buffers;
 
     for(size_t i = 0; i < 4; ++i)
         buffers.emplace_back();

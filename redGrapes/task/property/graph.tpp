@@ -10,8 +10,6 @@
 #include "redGrapes/task/property/graph.hpp"
 #include "redGrapes/util/trace.hpp"
 
-#include <memory>
-
 namespace redGrapes
 {
 
@@ -38,7 +36,7 @@ namespace redGrapes
         TRACE_EVENT("Graph", "init_graph");
         for(auto r = task->unique_resources.rbegin(); r != task->unique_resources.rend(); ++r)
         {
-            if(r->task_entry != r->resource->users.rend())
+            if(r->user_entry != r->resource->users.rend())
             {
                 // TODO: can this lock be avoided?
                 //
@@ -51,18 +49,18 @@ namespace redGrapes
                 std::unique_lock<SpinLock> lock(r->resource->users_mutex);
 
                 TRACE_EVENT("Graph", "CheckPredecessors");
-                auto it = r->task_entry;
+                auto it = r->user_entry;
 
                 ++it;
                 for(; it != r->resource->users.rend(); ++it)
                 {
                     TRACE_EVENT("Graph", "Check Pred");
-                    TTask* preceding_task = *it;
+                    auto preceding_task = static_cast<TTask*>(*it);
 
-                    if(preceding_task == space->parent)
+                    if(preceding_task == task->space->parent)
                         break;
 
-                    if(preceding_task->space == space && is_serial(*preceding_task, *task))
+                    if(preceding_task->space == task->space && is_serial(*preceding_task, *task))
                     {
                         add_dependency(*preceding_task);
                         if(preceding_task->has_sync_access(r->resource))
@@ -83,8 +81,8 @@ namespace redGrapes
             //   corresponding lock to init_graph()
             std::unique_lock<SpinLock> lock(r->resource->users_mutex);
 
-            if(r->task_entry != r->resource->users.rend())
-                r->resource->users.remove(r->task_entry);
+            if(r->user_entry != r->resource->users.rend())
+                r->resource->users.remove(r->user_entry);
         }
     }
 

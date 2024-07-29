@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "redGrapes/resource/resource.hpp"
 #include "redGrapes/util/chunked_list.hpp"
 
 #include <fmt/format.h>
@@ -24,41 +25,94 @@ namespace redGrapes
 #    define REDGRAPES_RUL_CHUNKSIZE 128
 #endif
 
-    template<typename TTask>
-    struct ResourceBase;
+    struct TaskSpace;
 
-    template<typename TTask>
-    struct ResourceAccess;
-
-    template<typename TTask>
     struct ResourceUsageEntry
     {
-        std::shared_ptr<ResourceBase<TTask>> resource;
-        typename ChunkedList<TTask*, REDGRAPES_RUL_CHUNKSIZE>::MutBackwardIterator task_entry;
+        std::shared_ptr<ResourceBase> resource;
+        typename ChunkedList<ResourceUser*, REDGRAPES_RUL_CHUNKSIZE>::MutBackwardIterator user_entry;
 
-        bool operator==(ResourceUsageEntry<TTask> const& other) const;
+        friend bool operator==(ResourceUsageEntry const& a, ResourceUsageEntry const& b)
+        {
+            return a.resource == b.resource;
+        }
     };
 
-    template<typename TTask>
     struct ResourceUser
     {
-        ResourceUser(WorkerId worker_id);
+        ResourceUser(WorkerId worker_id, unsigned scope_depth)
+            : access_list(memory::Allocator(worker_id))
+            , unique_resources(memory::Allocator(worker_id))
+            , scope_level(scope_depth)
+        {
+        }
+
         ResourceUser(ResourceUser const& other) = delete;
 
-        ResourceUser(ResourceUser<TTask> const& other, WorkerId worker_id)
+        ResourceUser(ResourceUser const& other, WorkerId worker_id)
             : access_list(memory::Allocator(worker_id), other.access_list)
             , unique_resources(memory::Allocator(worker_id), other.unique_resources)
             , scope_level(other.scope_level)
         {
         }
 
-        ResourceUser(std::initializer_list<ResourceAccess<TTask>> list, WorkerId worker_id);
+        ResourceUser(std::initializer_list<ResourceAccess> list, WorkerId worker_id, unsigned scope_depth)
+            : access_list(memory::Allocator(worker_id))
+            , unique_resources(memory::Allocator(worker_id))
+            , scope_level(scope_depth)
+        {
+            for(auto& ra : list)
+                add_resource_access(ra);
+        }
 
-        void add_resource_access(ResourceAccess<TTask> ra);
-        void rm_resource_access(ResourceAccess<TTask> ra);
-        void build_unique_resource_list();
-        bool has_sync_access(std::shared_ptr<ResourceBase<TTask>> const& res);
-        bool is_superset_of(ResourceUser const& a) const;
+        void add_resource_access(ResourceAccess ra)
+        {
+            this->access_list.push(ra);
+            std::shared_ptr<ResourceBase> r = ra.get_resource();
+            unique_resources.push(ResourceUsageEntry{r, r->users.rend()});
+        }
+
+        void rm_resource_access(ResourceAccess ra)
+        {
+            this->access_list.erase(ra);
+        }
+
+        void build_unique_resource_list()
+        {
+            for(auto ra = access_list.rbegin(); ra != access_list.rend(); ++ra)
+            {
+                std::shared_ptr<ResourceBase> r = ra->get_resource();
+                unique_resources.erase(ResourceUsageEntry{r, r->users.rend()});
+                unique_resources.push(ResourceUsageEntry{r, r->users.rend()});
+            }
+        }
+
+        bool has_sync_access(std::shared_ptr<ResourceBase> const& res)
+        {
+            for(auto ra = access_list.rbegin(); ra != access_list.rend(); ++ra)
+            {
+                if(ra->get_resource() == res && ra->is_synchronizing())
+                    return true;
+            }
+            return false;
+        }
+
+        bool is_superset_of(ResourceUser const& a) const
+        {
+            TRACE_EVENT("ResourceUser", "is_superset");
+            for(auto ra = a.access_list.rbegin(); ra != a.access_list.rend(); ++ra)
+            {
+                bool found = false;
+                for(auto r = access_list.rbegin(); r != access_list.rend(); ++r)
+                    if(r->is_superset_of(*ra))
+                        found = true;
+
+                if(!found && ra->scope_level() <= scope_level)
+                    // a introduced a new resource
+                    return false;
+            }
+            return true;
+        }
 
         friend bool is_serial(ResourceUser const& a, ResourceUser const& b)
         {
@@ -67,21 +121,27 @@ namespace redGrapes
                 for(auto rb = b.access_list.crbegin(); rb != b.access_list.crend(); ++rb)
                 {
                     TRACE_EVENT("ResourceUser", "RA::is_serial");
-                    if(ResourceAccess<TTask>::is_serial(*ra, *rb))
+                    if(ResourceAccess::is_serial(*ra, *rb))
                         return true;
                 }
             return false;
         }
 
-        ChunkedList<ResourceAccess<TTask>, 8> access_list;
-        ChunkedList<ResourceUsageEntry<TTask>, 8> unique_resources;
+        ChunkedList<ResourceAccess, 8> access_list;
+        ChunkedList<ResourceUsageEntry, 8> unique_resources;
         uint8_t scope_level;
+        //! task space that contains this task, must not be null
+        std::shared_ptr<TaskSpace> space;
+
+        //! task space for children, may be null
+        std::shared_ptr<TaskSpace> children;
+
     }; // struct ResourceUser
 
 } // namespace redGrapes
 
-template<typename TTask>
-struct fmt::formatter<redGrapes::ResourceUser<TTask>>
+template<>
+struct fmt::formatter<redGrapes::ResourceUser>
 {
     constexpr auto parse(format_parse_context& ctx)
     {
@@ -89,7 +149,7 @@ struct fmt::formatter<redGrapes::ResourceUser<TTask>>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::ResourceUser<TTask> const& r, FormatContext& ctx)
+    auto format(redGrapes::ResourceUser const& r, FormatContext& ctx)
     {
         auto out = ctx.out();
         out = fmt::format_to(out, "[");
@@ -105,5 +165,3 @@ struct fmt::formatter<redGrapes::ResourceUser<TTask>>
         return out;
     }
 };
-
-#include "redGrapes/resource/resource_user.tpp"
