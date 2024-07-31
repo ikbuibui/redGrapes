@@ -11,13 +11,10 @@
 
 #pragma once
 
-#include "redGrapes/TaskFreeCtx.hpp"
 #include "redGrapes/resource/access/io.hpp"
 #include "redGrapes/resource/resource.hpp"
-#include "redGrapes/util/traits.hpp"
 
 #include <memory>
-#include <type_traits>
 #include <utility>
 
 namespace redGrapes
@@ -26,34 +23,22 @@ namespace redGrapes
     template<typename T>
     struct IOResource : public SharedResourceObject<T, access::IOAccess>
     {
-        IOResource(std::shared_ptr<T> const& o)
-            : SharedResourceObject<T, access::IOAccess>(TaskFreeCtx::create_resource_uid(), o)
+        using SharedResourceObject<T, access::IOAccess>::SharedResourceObject;
+
+        auto read() const noexcept
         {
+            return ResourceAccessPair<std::shared_ptr<T const>>{
+                this->obj,
+                this->res.make_access(access::IOAccess::read)};
         }
 
-        template<typename... Args>
-        requires(
-            !(traits::is_specialization_of_v<std::decay_t<traits::first_type_t<Args...>>, IOResource>
-              || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, std::shared_ptr<T>>) )
-        IOResource(Args&&... args)
-            : SharedResourceObject<T, access::IOAccess>(
-                  TaskFreeCtx::create_resource_uid(),
-                  std::forward<Args>(args)...)
+        auto write() const noexcept
         {
+            return ResourceAccessPair<std::shared_ptr<T>>{this->obj, this->res.make_access(access::IOAccess::write)};
         }
-
-        template<typename U>
-        IOResource(IOResource<U> const& res, std::shared_ptr<T> const& obj)
-            : SharedResourceObject<T, access::IOAccess>(res, obj)
-        {
-        }
-
-        template<typename U, typename... Args>
-        IOResource(IOResource<U> const& res, Args&&... args)
-            : SharedResourceObject<T, access::IOAccess>(res, std::forward<Args>(args)...)
-        {
-        }
-
     }; // struct IOResource
+
+    template<typename T>
+    IOResource(std::shared_ptr<T>) -> IOResource<T>;
 
 } // namespace redGrapes

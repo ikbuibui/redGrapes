@@ -86,7 +86,7 @@ namespace redGrapes
                 return m_base_id;
             }
 
-            virtual void init(WorkerId base_id)
+            void init(WorkerId base_id) override
             {
                 m_base_id = base_id;
                 // TODO check if it was already initalized

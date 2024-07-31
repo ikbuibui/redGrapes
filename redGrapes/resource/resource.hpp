@@ -16,6 +16,7 @@
 #include "redGrapes/sync/spinlock.hpp"
 #include "redGrapes/task/property/trait.hpp"
 #include "redGrapes/util/chunked_list.hpp"
+#include "redGrapes/util/traits.hpp"
 
 #include <boost/type_index.hpp>
 #include <fmt/format.h>
@@ -273,30 +274,16 @@ namespace redGrapes
     bool is_serial(ResourceAccess const& a, ResourceAccess const& b);
 
     template<typename T>
-    struct ResourceAccessPair : public std::pair<std::shared_ptr<T>, ResourceAccess>
+    struct ResourceAccessPair : public std::pair<T, ResourceAccess>
     {
-        using std::pair<std::shared_ptr<T>, ResourceAccess>::pair;
+        using std::pair<T, ResourceAccess>::pair;
 
         operator ResourceAccess() const
         {
             return this->second;
         }
 
-        auto& operator*() const noexcept
-        {
-            return *(this->first);
-        }
-
-        auto* operator->() const noexcept
-        {
-            return this->first.get();
-        }
-
-        auto* get() const noexcept
-        {
-            return this->first.get();
-        }
-    };
+    }; // namespace std::pair
 
     namespace trait
     {
@@ -394,23 +381,31 @@ namespace redGrapes
     template<typename T, typename AccessPolicy>
     struct SharedResourceObject
     {
-        SharedResourceObject(ResourceId id, std::shared_ptr<T> obj) : res{id}, obj(std::move(obj))
+        SharedResourceObject(std::shared_ptr<T> obj) : res{TaskFreeCtx::create_resource_uid()}, obj(std::move(obj))
         {
         }
 
         template<typename... Args>
-        SharedResourceObject(ResourceId id, Args&&... args)
-            : res{id}
-            , obj{memory::alloc_shared_bind<T>(mapping::map_resource_to_worker(id), std::forward<Args>(args)...)}
+        requires(!(traits::is_specialization_of_v<std::decay_t<traits::first_type_t<Args...>>, SharedResourceObject>
+                   || std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, std::shared_ptr<T>>) )
+        SharedResourceObject(Args&&... args)
+            : res{TaskFreeCtx::create_resource_uid()}
+            , obj{memory::alloc_shared_bind<T>(
+                  mapping::map_resource_to_worker(res.resource_id()),
+                  std::forward<Args>(args)...)}
         {
         }
 
-        SharedResourceObject(Resource<AccessPolicy> const& res, std::shared_ptr<T> obj) : res{res}, obj{std::move(obj)}
+        template<typename U>
+        SharedResourceObject(SharedResourceObject<U, AccessPolicy> const& res, std::shared_ptr<T> obj)
+            : res{res}
+            , obj{std::move(obj)}
         {
         }
 
-        template<typename... Args>
-        SharedResourceObject(Resource<AccessPolicy> const& res, Args&&... args)
+        template<typename U, typename... Args>
+        requires(!(std::is_same_v<std::decay_t<traits::first_type_t<Args...>>, std::shared_ptr<T>>) )
+        SharedResourceObject(SharedResourceObject<U, AccessPolicy> const& res, Args&&... args)
             : res{res}
             , obj{memory::alloc_shared_bind<T>(
                   mapping::map_resource_to_worker(res.resource_id()),
@@ -418,21 +413,16 @@ namespace redGrapes
         {
         }
 
-        auto read() const noexcept
+        // DANGER! Gives access to ibject being held as a resource without any synchronization and scheduling
+        // Only to be used when you know what you are doing
+        auto& getObject()
         {
-            return ResourceAccessPair<T const>{obj, res.make_access(AccessPolicy::read)};
+            return obj;
         }
-
-        auto write() const noexcept
-        {
-            return ResourceAccessPair<T>{obj, res.make_access(AccessPolicy::write)};
-        }
-
 
     protected:
         Resource<AccessPolicy> res;
         std::shared_ptr<T> obj;
-
 
     }; // struct SharedResourceObject
 
