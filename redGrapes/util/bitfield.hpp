@@ -8,7 +8,10 @@
 #pragma once
 
 #include <atomic>
+#include <iomanip>
+#include <iostream>
 #include <optional>
+#include <sstream>
 #include <vector>
 
 namespace redGrapes
@@ -37,16 +40,16 @@ namespace redGrapes
         inline bool set(unsigned idx, bool new_value)
         {
             __INDEX_CALC(idx, chunk_idx, k, mask)
-            unsigned old_val;
+            uint64_t old_val;
 
             switch(new_value)
             {
             case false:
-                old_val = state[chunk_idx].fetch_and(~mask, std::memory_order_acquire);
+                old_val = state[chunk_idx].fetch_and(~mask, std::memory_order_acq_rel);
                 break;
 
             case true:
-                old_val = state[chunk_idx].fetch_or(mask, std::memory_order_release);
+                old_val = state[chunk_idx].fetch_or(mask, std::memory_order_acq_rel);
                 break;
             }
 
@@ -58,7 +61,7 @@ namespace redGrapes
         inline bool get(unsigned idx)
         {
             __INDEX_CALC(idx, chunk_idx, k, mask)
-            return state[chunk_idx] & mask;
+            return state[chunk_idx].load(std::memory_order_acquire) & mask;
         }
 
         /* searches for a bit which is of state `expected_value`
@@ -78,14 +81,19 @@ namespace redGrapes
             unsigned start_idx,
             bool exclude_start = true)
         {
+            if(start_idx >= size())
+                return std::nullopt;
+
             uint64_t start_field_idx = start_idx / bitfield_len;
             uint64_t first_mask = (uint64_t(-1) << (start_idx % bitfield_len));
             uint64_t second_mask = ~first_mask;
 
+            uint64_t last_chunk_bits = size() % bitfield_len;
+
             /* probe second-half of current chunk
              */
             if(start_field_idx == state.size() - 1 && size() % bitfield_len != 0)
-                second_mask &= (uint64_t(1) << (size() % bitfield_len)) - 1;
+                second_mask &= (uint64_t(1) << last_chunk_bits) - 1;
 
             if(exclude_start)
                 second_mask &= ~(uint64_t(1) << (start_idx % bitfield_len));
@@ -95,8 +103,9 @@ namespace redGrapes
 
             /* probe first half of current chunk
              */
-            if(start_field_idx == state.size() - 1 && size() % bitfield_len != 0)
-                first_mask &= (uint64_t(1) << (size() % bitfield_len)) - 1;
+            if(start_field_idx == state.size() - 1 && last_chunk_bits != 0)
+                first_mask &= (uint64_t(1) << last_chunk_bits) - 1;
+
             if(auto x = probe_chunk_by_value<T>(start_field_idx, first_mask, expected_value, f))
                 return x;
 
@@ -107,8 +116,8 @@ namespace redGrapes
                 uint64_t field_idx = (start_field_idx + b) % state.size();
                 uint64_t mask = ~0;
 
-                if(field_idx == state.size() - 1 && size() % bitfield_len != 0)
-                    mask &= (uint64_t(1) << (size() % bitfield_len)) - 1;
+                if(field_idx == state.size() - 1 && last_chunk_bits != 0)
+                    mask &= (uint64_t(1) << last_chunk_bits) - 1;
 
                 if(auto x = probe_chunk_by_value<T>(field_idx, mask, expected_value, f))
                     return x;
@@ -117,6 +126,23 @@ namespace redGrapes
             return std::nullopt;
         }
 
+        // Method to print the state
+        void print(int id) const
+        {
+            auto extracted_state = extract_state();
+            std::ostringstream oss;
+            oss << "AtomicBitfield(size=" << m_size << ", Calling WorkerId=" << id << ", state=[";
+
+            for(size_t i = 0; i < extracted_state.size(); ++i)
+            {
+                if(i > 0)
+                    oss << ", ";
+                oss << "0x" << std::hex << std::setw(16) << std::setfill('0') << extracted_state[i];
+            }
+
+            oss << "])";
+            std::cout << oss.str() << std::endl;
+        }
 
     private:
         // TODO: try different values, e.g. 8
@@ -190,6 +216,17 @@ namespace redGrapes
             }
 
             return std::nullopt;
+        }
+
+        // Method to extract state safely
+        std::vector<uint64_t> extract_state() const
+        {
+            std::vector<uint64_t> result(state.size());
+            for(size_t i = 0; i < state.size(); ++i)
+            {
+                result[i] = state[i].load(std::memory_order_acquire);
+            }
+            return result;
         }
     };
 

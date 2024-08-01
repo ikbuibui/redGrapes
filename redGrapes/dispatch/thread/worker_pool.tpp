@@ -49,12 +49,7 @@ namespace redGrapes
                         memory::HwlocAlloc(TaskFreeCtx::hwloc_ctx, obj),
                         REDGRAPES_ALLOC_CHUNKSIZE);
 
-                    auto worker = memory::alloc_shared_bind<WorkerThread<Worker>>(
-                        worker_id,
-                        obj,
-                        worker_id,
-                        worker_state,
-                        *this);
+                    auto worker = memory::alloc_shared_bind<WorkerThread<Worker>>(worker_id, obj, worker_id, *this);
                     workers.emplace_back(worker);
                 }
             }
@@ -83,7 +78,9 @@ namespace redGrapes
                 SPDLOG_TRACE("find worker...");
 
                 WorkerId start_idx = 0;
-                if(TaskFreeCtx::current_worker_id)
+
+                if(m_base_id <= *TaskFreeCtx::current_worker_id
+                   && *TaskFreeCtx::current_worker_id < m_base_id + num_workers)
                     start_idx = *TaskFreeCtx::current_worker_id - m_base_id;
 
                 std::optional<WorkerId> idx = this->probe_worker_by_state<WorkerId>(
