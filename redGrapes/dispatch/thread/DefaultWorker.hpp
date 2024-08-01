@@ -9,7 +9,6 @@
 
 #include "redGrapes/sync/cv.hpp"
 #include "redGrapes/task/queue.hpp"
-#include "redGrapes/util/bitfield.hpp"
 
 #include <hwloc.h>
 #include <moodycamel/concurrentqueue.h>
@@ -39,7 +38,6 @@ namespace redGrapes
                 using task_type = TTask;
                 // private:
                 WorkerId id;
-                AtomicBitfield* worker_state_p;
                 WorkerPool<DefaultWorker>* worker_pool_p;
 
                 /*! if true, the thread shall stop
@@ -57,9 +55,8 @@ namespace redGrapes
                 task::Queue<TTask> emplacement_queue{queue_capacity};
                 task::Queue<TTask> ready_queue{queue_capacity};
 
-                DefaultWorker(WorkerId worker_id, AtomicBitfield& worker_state, WorkerPool<DefaultWorker>& worker_pool)
+                DefaultWorker(WorkerId worker_id, WorkerPool<DefaultWorker>& worker_pool)
                     : id(worker_id)
-                    , worker_state_p(&worker_state)
                     , worker_pool_p(&worker_pool)
                 {
                 }

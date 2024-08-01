@@ -9,7 +9,6 @@
 #include "redGrapes/dispatch/thread/DefaultWorker.hpp"
 #include "redGrapes/dispatch/thread/worker_pool.hpp"
 #include "redGrapes/globalSpace.hpp"
-#include "redGrapes/util/bitfield.hpp"
 #include "redGrapes/util/trace.hpp"
 
 #include <hwloc.h>
@@ -37,12 +36,12 @@ namespace redGrapes
                 SPDLOG_TRACE("Worker {} start work_loop()", id);
                 while(!m_stop.load(std::memory_order_consume))
                 {
-                    worker_state_p->set(id, dispatch::thread::WorkerState::AVAILABLE);
+                    worker_pool_p->set_worker_state_global(id, dispatch::thread::WorkerState::AVAILABLE);
                     cv.wait();
 
                     while(TTask* task = this->gather_task())
                     {
-                        worker_state_p->set(id, dispatch::thread::WorkerState::BUSY);
+                        worker_pool_p->set_worker_state_global(id, dispatch::thread::WorkerState::BUSY);
                         execute_task(*task);
                     }
                 }
@@ -103,7 +102,7 @@ namespace redGrapes
 
                 /* set worker state to signal that we are requesting tasks
                  */
-                worker_state_p->set(id, dispatch::thread::WorkerState::AVAILABLE);
+                worker_pool_p->set_worker_state_global(id, dispatch::thread::WorkerState::AVAILABLE);
 
 #ifndef ENABLE_WORKSTEALING
 #    define ENABLE_WORKSTEALING 1

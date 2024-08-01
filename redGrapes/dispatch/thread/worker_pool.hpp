@@ -7,7 +7,6 @@
 #pragma once
 
 #include "redGrapes/TaskFreeCtx.hpp"
-#include "redGrapes/memory/hwloc_alloc.hpp"
 #include "redGrapes/util/bitfield.hpp"
 
 #include <memory>
@@ -65,8 +64,13 @@ namespace redGrapes
                     return worker_state.get(local_worker_id) ? WorkerState::AVAILABLE : WorkerState::BUSY;
                 }
 
-                /* return true on success
-                 */
+                // return true if state changes
+                inline bool set_worker_state_global(WorkerId worker_id, WorkerState state)
+                {
+                    return worker_state.set(worker_id - m_base_id, state) != state;
+                }
+
+                // return true if state changes
                 inline bool set_worker_state(WorkerId local_worker_id, WorkerState state)
                 {
                     return worker_state.set(local_worker_id, state) != state;
@@ -82,7 +86,8 @@ namespace redGrapes
                     return worker_state.template probe_by_value<T, F>(
                         std::move(f),
                         expected_worker_state,
-                        start_worker_idx);
+                        start_worker_idx,
+                        exclude_start);
                 }
 
                 /*!
@@ -160,13 +165,11 @@ namespace redGrapes
                 // @return task if a new task was found, nullptr otherwise
                 TTask* steal_task(Worker& worker)
                 {
-                    WorkerId local_worker_id = worker.id - m_base_id;
-
-                    SPDLOG_DEBUG("steal task for worker {}", local_worker_id);
+                    SPDLOG_DEBUG("steal task for worker (global id) {}", worker.id);
 
                     if(TTask* task = steal_ready_task(worker))
                     {
-                        set_worker_state(local_worker_id, dispatch::thread::WorkerState::BUSY);
+                        set_worker_state_global(worker.id, dispatch::thread::WorkerState::BUSY);
                         return task;
                     }
 
@@ -177,7 +180,7 @@ namespace redGrapes
 
                         if(task->get_pre_event().notify(true))
                         {
-                            set_worker_state(local_worker_id, dispatch::thread::WorkerState::BUSY);
+                            set_worker_state_global(worker.id, dispatch::thread::WorkerState::BUSY);
                             return task;
                         }
                     }
