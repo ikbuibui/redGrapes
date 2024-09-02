@@ -52,8 +52,8 @@ namespace redGrapes
                 static constexpr size_t queue_capacity = 128;
 
             public:
-                task::Queue<TTask> emplacement_queue{queue_capacity};
-                task::Queue<TTask> ready_queue{queue_capacity};
+                task::Queue<TTask*> emplacement_queue{queue_capacity};
+                task::Queue<TTask*> ready_queue{queue_capacity};
 
                 DefaultWorker(WorkerId worker_id, WorkerPool<DefaultWorker>& worker_pool)
                     : id(worker_id)

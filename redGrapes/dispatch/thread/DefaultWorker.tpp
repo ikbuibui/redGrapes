@@ -79,15 +79,14 @@ namespace redGrapes
             TTask* DefaultWorker<TTask>::gather_task()
             {
                 TRACE_EVENT("Worker", "gather_task()");
-                TTask* task = nullptr;
 
                 /* STAGE 1:
                  *
                  * first, execute all tasks in the ready queue
                  */
                 SPDLOG_TRACE("Worker {}: consume ready queue", id);
-                if((task = ready_queue.pop()))
-                    return task;
+                if(auto ready_task = ready_queue.pop())
+                    return *ready_task;
 
                 /* STAGE 2:
                  *
@@ -95,6 +94,7 @@ namespace redGrapes
                  * try initializing new tasks until one
                  * of them is found to be ready
                  */
+                TTask* task = nullptr;
                 SPDLOG_TRACE("Worker {}: try init new tasks", id);
                 while(this->init_dependencies(task, true))
                     if(task)
@@ -126,15 +126,15 @@ namespace redGrapes
             bool DefaultWorker<TTask>::init_dependencies(TTask*& t, bool claimed)
             {
                 TRACE_EVENT("Worker", "init_dependencies()");
-                if(TTask* task = emplacement_queue.pop())
+                if(auto task = emplacement_queue.pop())
                 {
-                    SPDLOG_DEBUG("init task {}", task->task_id);
+                    SPDLOG_DEBUG("init task {}", (*task)->task_id);
 
-                    task->pre_event.up();
-                    task->init_graph();
+                    (*task)->pre_event.up();
+                    (*task)->init_graph();
 
-                    if(task->get_pre_event().notify(claimed))
-                        t = task;
+                    if((*task)->get_pre_event().notify(claimed))
+                        t = *task;
                     else
                     {
                         t = nullptr;

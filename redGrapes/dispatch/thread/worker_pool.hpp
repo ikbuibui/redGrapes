@@ -109,11 +109,11 @@ namespace redGrapes
                         {
                             // we have a candidate of a busy worker,
                             // now check its queue
-                            if(TTask* t = get_worker_thread(idx).worker.emplacement_queue.pop())
+                            if(auto t = get_worker_thread(idx).worker.emplacement_queue.pop())
                                 return t;
 
                             // otherwise check own queue again
-                            else if(TTask* t = worker.emplacement_queue.pop())
+                            else if(auto t = worker.emplacement_queue.pop())
                                 return t;
 
                             // else continue search
@@ -140,11 +140,11 @@ namespace redGrapes
                         {
                             // we have a candidate of a busy worker,
                             // now check its queue
-                            if(TTask* t = get_worker_thread(idx).worker.ready_queue.pop())
+                            if(auto t = get_worker_thread(idx).worker.ready_queue.pop())
                                 return t;
 
                             // otherwise check own queue again
-                            else if(TTask* t = worker.ready_queue.pop())
+                            else if(auto t = worker.ready_queue.pop())
                                 return t;
 
                             // else continue search

@@ -46,39 +46,39 @@ namespace redGrapes
             // but many producers, a smaller block size should be favoured. For few producers
             // and/or many elements, a larger block size is preferred. A sane default
             // is provided. Must be a power of 2.
-            static const size_t BLOCK_SIZE = 64;
+            static size_t const BLOCK_SIZE = 64;
 
             // For explicit producers (i.e. when using a producer token), the block is
             // checked for being empty by iterating through a list of flags, one per element.
             // For large block sizes, this is too inefficient, and switching to an atomic
             // counter-based approach is faster. The switch is made for block sizes strictly
             // larger than this threshold.
-            static const size_t EXPLICIT_BLOCK_EMPTY_COUNTER_THRESHOLD = 32;
+            static size_t const EXPLICIT_BLOCK_EMPTY_COUNTER_THRESHOLD = 32;
 
             // How many full blocks can be expected for a single explicit producer? This should
             // reflect that number's maximum for optimal performance. Must be a power of 2.
-            static const size_t EXPLICIT_INITIAL_INDEX_SIZE = 128;
+            static size_t const EXPLICIT_INITIAL_INDEX_SIZE = 128;
 
             // How many full blocks can be expected for a single implicit producer? This should
             // reflect that number's maximum for optimal performance. Must be a power of 2.
-            static const size_t IMPLICIT_INITIAL_INDEX_SIZE = 128;
+            static size_t const IMPLICIT_INITIAL_INDEX_SIZE = 128;
 
             // The initial size of the hash table mapping thread IDs to implicit producers.
             // Note that the hash is resized every time it becomes half full.
             // Must be a power of two, and either 0 or at least 1. If 0, implicit production
             // (using the enqueue methods without an explicit producer token) is disabled.
-            static const size_t INITIAL_IMPLICIT_PRODUCER_HASH_SIZE = 32;
+            static size_t const INITIAL_IMPLICIT_PRODUCER_HASH_SIZE = 32;
 
             // Controls the number of items that an explicit consumer (i.e. one with a token)
             // must consume before it causes all consumers to rotate and move on to the next
             // internal queue.
-            static const std::uint32_t EXPLICIT_CONSUMER_CONSUMPTION_QUOTA_BEFORE_ROTATE = 256;
+            static std::uint32_t const EXPLICIT_CONSUMER_CONSUMPTION_QUOTA_BEFORE_ROTATE = 256;
 
             // The maximum number of elements (inclusive) that can be enqueued to a sub-queue.
             // Enqueue operations that would cause this limit to be surpassed will fail. Note
             // that this limit is enforced at the block level (for performance reasons), i.e.
             // it's rounded up to the nearest block size.
-            static const size_t MAX_SUBQUEUE_SIZE = moodycamel::details::const_numeric_max<size_t>::value;
+            static size_t const MAX_SUBQUEUE_SIZE = moodycamel::details::const_numeric_max<size_t>::value;
 
             // The number of times to spin before sleeping when waiting on a semaphore.
             // Recommended values are on the order of 1000-10000 unless the number of
@@ -106,7 +106,7 @@ namespace redGrapes
             }
         };
 
-        template<typename TTask>
+        template<typename T>
         struct Queue
         {
             /*
@@ -115,7 +115,7 @@ namespace redGrapes
 
             std::mutex m;
         */
-            moodycamel::ConcurrentQueue<TTask* /*, TaskQueueTraits */> cq;
+            moodycamel::ConcurrentQueue<T /*, TaskQueueTraits */> cq;
 
             Queue();
 
@@ -123,20 +123,20 @@ namespace redGrapes
             {
             }
 
-            inline void push(TTask* task)
+            inline void push(T obj)
             {
-                TRACE_EVENT("Task", "TaskQueue::push()");
-                this->cq.enqueue(task);
+                TRACE_EVENT("Task", "Queue::push()");
+                this->cq.enqueue(obj);
             }
 
-            inline TTask* pop()
+            inline std::optional<T> pop()
             {
-                TRACE_EVENT("Task", "TaskQueue::pop()");
-                TTask* t = nullptr;
+                TRACE_EVENT("Task", "Queue::pop()");
+                T t;
                 if(this->cq.try_dequeue(t))
                     return t;
                 else
-                    return nullptr;
+                    return std::nullopt;
             }
         };
 
