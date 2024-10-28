@@ -186,7 +186,7 @@ struct fmt::formatter<redGrapes::GraphProperty<TTask>>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::GraphProperty<TTask> const& sg_prop, FormatContext& ctx)
+    auto format(redGrapes::GraphProperty<TTask> const& sg_prop, FormatContext& ctx) const
     {
         return ctx.out();
     }

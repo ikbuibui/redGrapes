@@ -256,7 +256,7 @@ struct fmt::formatter<redGrapes::dispatch::cuda::CudaTaskProperties>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::dispatch::cuda::CudaTaskProperties const& prop, FormatContext& ctx)
+    auto format(redGrapes::dispatch::cuda::CudaTaskProperties const& prop, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "\"cuda_stream_idx\" : {}", *(prop.m_cuda_stream_idx));
     }

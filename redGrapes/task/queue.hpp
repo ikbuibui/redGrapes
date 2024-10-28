@@ -96,7 +96,7 @@ namespace redGrapes
             static inline void* malloc(size_t size)
             {
                 //                return std::malloc(size);
-                return (void*) memory::Allocator().allocate(size).ptr;
+                return reinterpret_cast<void*>(memory::Allocator().allocate(size).ptr);
             }
 
             static inline void free(void* ptr)

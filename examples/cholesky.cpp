@@ -54,7 +54,6 @@ int main(int argc, char* argv[])
         n_threads = atoi(argv[3]);
 
     auto rg = redGrapes::init(n_threads);
-    using RGTask = decltype(rg)::RGTask;
 
     size_t N = nblks * blksz;
 

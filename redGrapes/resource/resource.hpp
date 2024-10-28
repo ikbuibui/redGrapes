@@ -43,7 +43,7 @@ namespace redGrapes
         {
             MappingFunc mappingFunc;
 
-            WorkerId operator()(ResourceId resourceId)
+            WorkerId operator()(ResourceId resourceId) const
             {
                 return mappingFunc(resourceId);
             }
@@ -51,13 +51,13 @@ namespace redGrapes
 
         struct ModuloMapping
         {
-            WorkerId operator()(ResourceId resourceId)
+            WorkerId operator()(ResourceId resourceId) const
             {
                 return resourceId % TaskFreeCtx::n_workers;
             }
         };
 
-        static MapResourceIdToWorker<ModuloMapping> map_resource_to_worker{};
+        static const MapResourceIdToWorker<ModuloMapping> map_resource_to_worker{};
 
     } // namespace mapping
 
@@ -396,7 +396,7 @@ struct fmt::formatter<redGrapes::ResourceAccess>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::ResourceAccess const& acc, FormatContext& ctx)
+    auto format(redGrapes::ResourceAccess const& acc, FormatContext& ctx) const
     {
         return fmt::format_to(
             ctx.out(),

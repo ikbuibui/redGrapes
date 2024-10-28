@@ -146,6 +146,7 @@ struct fmt::formatter<redGrapes::access::ArrayAccess<Access, N, redGrapes::acces
 
     template<typename FormatContext>
     auto format(redGrapes::access::ArrayAccess<Access, N, redGrapes::access::And_t> const& acc, FormatContext& ctx)
+        const
     {
         auto out = ctx.out();
         out = fmt::format_to(out, "{{ \"and\" : [");
@@ -172,6 +173,7 @@ struct fmt::formatter<redGrapes::access::ArrayAccess<Access, N, redGrapes::acces
 
     template<typename FormatContext>
     auto format(redGrapes::access::ArrayAccess<Access, N, redGrapes::access::Or_t> const& acc, FormatContext& ctx)
+        const
     {
         auto out = ctx.out();
         out = fmt::format_to(out, "{{ \"or\" : [");
@@ -198,6 +200,7 @@ struct fmt::formatter<redGrapes::access::CombineAccess<Acc1, Acc2, redGrapes::ac
 
     template<typename FormatContext>
     auto format(redGrapes::access::CombineAccess<Acc1, Acc2, redGrapes::access::And_t> const& acc, FormatContext& ctx)
+        const
     {
         return fmt::format_to(ctx.out(), "{{ \"and\" : [ {}, {} ] }}", acc.first, acc.second);
     }
@@ -213,6 +216,7 @@ struct fmt::formatter<redGrapes::access::CombineAccess<Acc1, Acc2, redGrapes::ac
 
     template<typename FormatContext>
     auto format(redGrapes::access::CombineAccess<Acc1, Acc2, redGrapes::access::Or_t> const& acc, FormatContext& ctx)
+        const
     {
         return fmt::format_to(ctx.out(), "{{ \"or\" : [ {}, {} ] }}", acc.first, acc.second);
     }

@@ -74,7 +74,7 @@ struct fmt::formatter<redGrapes::access::IOAccess>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::access::IOAccess const& acc, FormatContext& ctx)
+    auto format(redGrapes::access::IOAccess const& acc, FormatContext& ctx) const
     {
         std::string mode_str;
 

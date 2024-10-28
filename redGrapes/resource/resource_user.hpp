@@ -149,7 +149,7 @@ struct fmt::formatter<redGrapes::ResourceUser>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::ResourceUser const& r, FormatContext& ctx)
+    auto format(redGrapes::ResourceUser const& r, FormatContext& ctx) const
     {
         auto out = ctx.out();
         out = fmt::format_to(out, "[");
