@@ -75,7 +75,7 @@ struct fmt::formatter<redGrapes::LabelProperty>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::LabelProperty const& label_prop, FormatContext& ctx)
+    auto format(redGrapes::LabelProperty const& label_prop, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "\"label\" : \"{}\"", label_prop.label);
     }

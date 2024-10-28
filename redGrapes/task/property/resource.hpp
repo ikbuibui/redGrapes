@@ -152,7 +152,7 @@ struct fmt::formatter<redGrapes::ResourceProperty<TTask>>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::ResourceProperty<TTask> const& label_prop, FormatContext& ctx)
+    auto format(redGrapes::ResourceProperty<TTask> const& label_prop, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "\"resources\" : {}", (redGrapes::ResourceUser const&) label_prop);
     }

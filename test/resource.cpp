@@ -36,7 +36,7 @@ struct fmt::formatter<Access>
     }
 
     template<typename FormatContext>
-    auto format([[maybe_unused]] Access const& acc, FormatContext& ctx)
+    auto format([[maybe_unused]] Access const& acc, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "Access");
     }

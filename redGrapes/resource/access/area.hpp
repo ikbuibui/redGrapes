@@ -41,7 +41,7 @@ namespace redGrapes
 
             static bool is_serial(AreaAccess const& a, AreaAccess const& b)
             {
-                return !((a[1] <= b[0]) || (a[0] >= b[1]));
+                return (a[1] > b[0]) && (a[0] < b[1]);
             }
 
             bool is_superset_of(AreaAccess const& a) const
@@ -70,7 +70,7 @@ struct fmt::formatter<redGrapes::access::AreaAccess>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::access::AreaAccess const& acc, FormatContext& ctx)
+    auto format(redGrapes::access::AreaAccess const& acc, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "{{ \"area\" : {{ \"begin\" : {}, \"end\" : {} }} }}", acc[0], acc[1]);
     }

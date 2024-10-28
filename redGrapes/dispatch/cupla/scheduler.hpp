@@ -183,7 +183,7 @@ struct fmt::formatter<redGrapes::dispatch::cupla::CuplaTaskProperties>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::dispatch::cupla::CuplaTaskProperties const& prop, FormatContext& ctx)
+    auto format(redGrapes::dispatch::cupla::CuplaTaskProperties const& prop, FormatContext& ctx) const
     {
         if(auto e = prop.cupla_event)
             return fmt::format_to(ctx.out(), "\"cupla_event\" : {}", *e);

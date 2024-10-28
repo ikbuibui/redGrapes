@@ -163,7 +163,7 @@ struct fmt::formatter<redGrapes::TaskPropertiesInherit<redGrapes::PropEnd_t>>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::TaskPropertiesInherit<redGrapes::PropEnd_t> const& prop, FormatContext& ctx)
+    auto format(redGrapes::TaskPropertiesInherit<redGrapes::PropEnd_t> const& prop, FormatContext& ctx) const
     {
         return ctx.out();
     }
@@ -178,7 +178,7 @@ struct fmt::formatter<redGrapes::TaskPropertiesInherit<T_Head, redGrapes::PropEn
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::TaskPropertiesInherit<T_Head, redGrapes::PropEnd_t> const& prop, FormatContext& ctx)
+    auto format(redGrapes::TaskPropertiesInherit<T_Head, redGrapes::PropEnd_t> const& prop, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "{}", (T_Head const&) prop);
     }
@@ -193,7 +193,7 @@ struct fmt::formatter<redGrapes::TaskPropertiesInherit<T_Head, T_Tail...>>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::TaskPropertiesInherit<T_Head, T_Tail...> const& prop, FormatContext& ctx)
+    auto format(redGrapes::TaskPropertiesInherit<T_Head, T_Tail...> const& prop, FormatContext& ctx) const
     {
         return fmt::format_to(
             ctx.out(),
@@ -212,7 +212,7 @@ struct fmt::formatter<redGrapes::TaskProperties1<Policies...>>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::TaskProperties1<Policies...> const& prop, FormatContext& ctx)
+    auto format(redGrapes::TaskProperties1<Policies...> const& prop, FormatContext& ctx) const
     {
         return fmt::format_to(
             ctx.out(),

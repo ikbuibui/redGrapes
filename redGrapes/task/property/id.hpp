@@ -92,7 +92,7 @@ struct fmt::formatter<redGrapes::IDProperty>
     }
 
     template<typename FormatContext>
-    auto format(redGrapes::IDProperty const& id_prop, FormatContext& ctx)
+    auto format(redGrapes::IDProperty const& id_prop, FormatContext& ctx) const
     {
         return fmt::format_to(ctx.out(), "\"id\" : {}", id_prop.task_id);
     }
